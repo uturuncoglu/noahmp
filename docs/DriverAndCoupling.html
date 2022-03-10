@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>1. Driver and Coupling &#8212; NoahMP Land Model Users Guide  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Building and Running the UFS Weather Model Land Configurations" href="BuildingAndRunning.html" />
+    <link rel="prev" title="Welcome to the NoahMP Land Model User’s Guide" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="BuildingAndRunning.html" title="2. Building and Running the UFS Weather Model Land Configurations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to the NoahMP Land Model User’s Guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">NoahMP Land Model Users Guide  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">1. </span>Driver and Coupling</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="driver-and-coupling">
+<span id="driverandcoupling"></span><h1><span class="section-number">1. </span>Driver and Coupling<a class="headerlink" href="#driver-and-coupling" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the NoahMP land model National Unified Operation Prediction Capability (NUOPC) “cap”, which is a light weight software layer that is required when the model is used as a part of the coupled modeling systems compatible with NOUPC such as <a class="reference external" href="https://ufs-weather-model.readthedocs.io/en/ufs-v2.0.0/">UFS Weather Model</a></p>
+<section id="supported-drivers">
+<h2><span class="section-number">1.1. </span>Supported Drivers<a class="headerlink" href="#supported-drivers" title="Permalink to this headline">¶</a></h2>
+<p>The driver and coupling layer is found under <strong>drivers/</strong> directory.</p>
+<p>Within the <strong>drivers/nuopc/</strong> directory, the following files are found,</p>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-number">Table 1.1 </span><span class="caption-text">List of files under <strong>drivers/nuopc/</strong> directory</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File</p></th>
+<th class="head"><p>Short Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>lnd_comp_domain.F90</p></td>
+<td><p>Subroutines that are used to create ESMF Grid/Mesh using mosaic or ESMF Mesh files</p></td>
+</tr>
+<tr class="row-odd"><td><p>lnd_comp_driver.F90</p></td>
+<td><p>Subroutines (init, run and finalize) that are used to drive the NoahMP land model</p></td>
+</tr>
+<tr class="row-even"><td><p>lnd_comp_import_export.F90</p></td>
+<td><p>Subroutines to define import and export states as well as diagnostic code to check the fields in states</p></td>
+</tr>
+<tr class="row-odd"><td><p>lnd_comp_io.F90</p></td>
+<td><p>Subroutines to read in static information and initial conditions from tiled files and writing model output in tiled format</p></td>
+</tr>
+<tr class="row-even"><td><p>lnd_comp_kind.F90</p></td>
+<td><p>Parameters that define used kind types</p></td>
+</tr>
+<tr class="row-odd"><td><p>lnd_comp_nuopc.F90</p></td>
+<td><p>Top level file that defines NUOPC cap for NoahMP Land Model</p></td>
+</tr>
+<tr class="row-even"><td><p>lnd_comp_shr.F90</p></td>
+<td><p>Shared code that aims to read parameters from ESMF config file and manuplating strings</p></td>
+</tr>
+<tr class="row-odd"><td><p>lnd_comp_types.F90</p></td>
+<td><p>Definition of NoahMP Land component specific data types for forcing, initial condition, model etc.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="noahmp-land-model-specific-esmf-configuration-options">
+<h2><span class="section-number">1.2. </span>NoahMP Land Model Specific ESMF Configuration Options<a class="headerlink" href="#noahmp-land-model-specific-esmf-configuration-options" title="Permalink to this headline">¶</a></h2>
+<p>The NUOPC “cap” uses set of namelist options provided as ESMF Config file format to define domain and configure the NoahMP Land Model. The list of relevant namelist options, which needs to be defined under <cite>LND_attributes::</cite> group can be seen in the following table.</p>
+<table class="colwidths-given docutils align-default" id="id2">
+<caption><span class="caption-number">Table 1.2 </span><span class="caption-text">Namelist options for NoahMP Land Model</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Short Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>mosaic_file</p></td>
+<td><p>The path and name of the mosaic grid file (i.e. INPUT/C96_mosaic.nc)</p></td>
+</tr>
+<tr class="row-odd"><td><p>input_dir</p></td>
+<td><p>The directory that stores initial conditions, static information and grid related files</p></td>
+</tr>
+<tr class="row-even"><td><p>ic_type</p></td>
+<td><p>Indicates the source of the initial conditions. Two options are supported ‘custom’ (i.e. C96.initial.tile[1-6].nc) and ‘sfc’ (default, sfc_data.tile[1-6].nc).</p></td>
+</tr>
+<tr class="row-odd"><td><p>layout</p></td>
+<td><p>Defines decompositions in each direction on each tile (i.e. 3:8 for C96). This needs to be consistent with resolution.</p></td>
+</tr>
+<tr class="row-even"><td><p>num_soil_levels</p></td>
+<td><p>Number of soil levels used by NoahMP Land Model (i.e. 4)</p></td>
+</tr>
+<tr class="row-odd"><td><p>forcing_height</p></td>
+<td><p>Height of the atmospheric forcing in meters (i.e. 10)</p></td>
+</tr>
+<tr class="row-even"><td><p>soil_level_thickness</p></td>
+<td><p>Thickness of the soil levels (i.e. 0.10:0.30:0.60:1.00). The number of soil level thickness needs to be consistent with <cite>num_soil_levels</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>soil_level_nodes</p></td>
+<td><p>Depths of the node points for each soil level (i.e. 0.05:0.25:0.70:1.50). The number of node points needs to be consistent with <cite>num_soil_levels</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p>dynamic_vegetation_option</p></td>
+<td><p>Options for dynamic vegetation (i.e. 4)</p></td>
+</tr>
+<tr class="row-odd"><td><p>canopy_stomatal_resistance_option</p></td>
+<td><p>Canopy stomatal resistance (1-&gt;ball-berry; 2-&gt;jarvis)</p></td>
+</tr>
+<tr class="row-even"><td><p>soil_wetness_option</p></td>
+<td><p>Options for soil moisture factor for stomatal resistance (1-&gt;noah; 2-&gt;clm; 3-&gt;ssib)</p></td>
+</tr>
+<tr class="row-odd"><td><p>runoff_option</p></td>
+<td><p>Options for runoff and groundwater (1-&gt;simgm; 2-&gt;simtop; 3-&gt;schaake96; 4-&gt;bats)</p></td>
+</tr>
+<tr class="row-even"><td><p>surface_exchange_option</p></td>
+<td><p>Options for surface layer drag coeff (ch and cm) (1-&gt;m-o; 2-&gt;chen97)</p></td>
+</tr>
+<tr class="row-odd"><td><p>supercooled_soilwater_option</p></td>
+<td><p>Options for supercooled liquid water (1-&gt; ny06; 2-&gt;koren99)</p></td>
+</tr>
+<tr class="row-even"><td><p>frozen_soil_adjust_option</p></td>
+<td><p>Options for frozen soil permeability (1-&gt; ny06; 2-&gt;koren99)</p></td>
+</tr>
+<tr class="row-odd"><td><p>radiative_transfer_option</p></td>
+<td><p>Options for radiation transfer (1-&gt;gap=f(3d,cosz); 2-&gt;gap=0; 3-&gt;gap=1-fveg)</p></td>
+</tr>
+<tr class="row-even"><td><p>snow_albedo_option</p></td>
+<td><p>Options for snow surface albedo (1-&gt;bats; 2-&gt;class)</p></td>
+</tr>
+<tr class="row-odd"><td><p>precip_partition_option</p></td>
+<td><p>Options for rainfall &amp; snowfall (1-jordan91; 2-&gt;bats; 3-&gt;noah)</p></td>
+</tr>
+<tr class="row-even"><td><p>soil_temp_lower_bdy_option</p></td>
+<td><p>Options for lower boundary of soil temperature (1-&gt;zero-flux; 2-&gt;noah)</p></td>
+</tr>
+<tr class="row-odd"><td><p>soil_temp_time_scheme_option</p></td>
+<td><p>Options for snow/soil temperature time scheme (only layer 1, 1-&gt;semi-implicit; 2-&gt;full implicit/original noah)</p></td>
+</tr>
+<tr class="row-even"><td><p>surface_evap_resistance_option</p></td>
+<td><p>Options for surface resistance (1-&gt;sakaguchi/zeng; 2-&gt;seller; 3-&gt;mod sellers; 4-&gt;1+snow)</p></td>
+</tr>
+<tr class="row-odd"><td><p>glacier_option</p></td>
+<td><p>Options for glacier treatment (1-&gt;phase change; 2-&gt;simple)</p></td>
+</tr>
+<tr class="row-even"><td><p>output_freq</p></td>
+<td><p>Options for output frequency in hours</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">:</span></code> symbol is used as a seperator for namelist options with multiple values such as <cite>layout</cite>, <cite>soil_level_thickness</cite>.</p>
+</div>
+</section>
+<section id="underlying-model-interfaces">
+<h2><span class="section-number">1.3. </span>Underlying Model Interfaces<a class="headerlink" href="#underlying-model-interfaces" title="Permalink to this headline">¶</a></h2>
+<section id="domain-creation">
+<h3><span class="section-number">1.3.1. </span>Domain Creation<a class="headerlink" href="#domain-creation" title="Permalink to this headline">¶</a></h3>
+<p>The current version of the NUOPC “cap” is able to create ESMF grid by reading mosaic grid file. Then, NOUPC “cap” converts created ESMF multi-tile grid to ESMF Mesh to standardize interface and allow running same NUOPC “cap” also reading domain information in ESMF Mesh format (not implemented yet). In this design, only ESMF Mesh is exposed to coupler or mediator via defining fields in import and export states using ESMF Mesh. The land fraction information (<cite>land_frac</cite>) is provided by reading <cite>*oro_data.tile*</cite> files and it is also used to define the land-sea mask (if land_frac is greater than 0 then it is assumed as land, otherwise it is water). The orography data is also defined using <cite>orog_raw</cite> variable in the same files.</p>
+</section>
+<section id="initialization">
+<h3><span class="section-number">1.3.2. </span>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline">¶</a></h3>
+<p>During the <cite>InitializeAdvertise</cite> phase, call is made to <cite>fms_init()</cite> to use <a class="reference external" href="https://www.gfdl.noaa.gov/fms/">Flexible Modeling System (FMS)</a> for reading and writing cubed-sphere tiled output. In this case, The MPI communicator is pulled in through the ESMF VM object and used by FMS. This phase also calls <cite>advertise_fields()</cite> to setup import and export states.</p>
+</section>
+<section id="run">
+<h3><span class="section-number">1.3.3. </span>Run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
+<p>During the <cite>ModelAdvance</cite> phase, the <cite>cap</cite> updates the import state and calls NoahMP driver routine (<cite>drv_run</cite>, which is found in <cite>drivers/nuopc/lnd_comp_driver.F90</cite>) to run the model and updates the export state with the information calculated by model. The <cite>drv_run</cite> call mainly read in static information as well as initial conditions when it is first called and interpolate monthly data provided by the static information such as fractional coverage of green vegetation and surface albedo to the date of the simulation. Then calculates solar zenith angle based on the time information extracted from <cite>cap</cite> and calls <cite>noahmpdrv_run</cite> subroutine provided by the NoahMP. This phase also responsible to write NoahMP model output in tiled format by taking advantage of FMS and ESMF routines.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>: the restart capability is only tested with DATM+NOAHMP configuration.</p>
+</div>
+</section>
+<section id="finalize">
+<h3><span class="section-number">1.3.4. </span>Finalize<a class="headerlink" href="#finalize" title="Permalink to this headline">¶</a></h3>
+<p>This phase is not implemented yet.</p>
+</section>
+<section id="model-fields-used-for-coupling">
+<h3><span class="section-number">1.3.5. </span>Model Fields Used for Coupling<a class="headerlink" href="#model-fields-used-for-coupling" title="Permalink to this headline">¶</a></h3>
+<table class="colwidths-given docutils align-default" id="id3">
+<caption><span class="caption-number">Table 1.3 </span><span class="caption-text">Import fields</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Standard Name</p></th>
+<th class="head"><p>Units</p></th>
+<th class="head"><p>Model Variable</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>inst_height_lowest</p></td>
+<td><p>m</p></td>
+<td><p>noahmp%forc%hgt</p></td>
+<td><p>bottom layer height</p></td>
+<td><p>namelist option <cite>forcing_height</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p>inst_temp_height_lowest</p></td>
+<td><p>K</p></td>
+<td><p>noahmp%forc%t1</p></td>
+<td><p>bottom layer temperature</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>inst_pres_height_lowest</p></td>
+<td><p>Pa</p></td>
+<td><p>noahmp%forc%ps</p></td>
+<td><p>pressure at lowest model layer</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>inst_spec_humid_height_lowest</p></td>
+<td><p>kg kg-1</p></td>
+<td><p>noahmp%forc%q1</p></td>
+<td><p>bottom layer specific humidity</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>inst_zonal_wind_height_lowest</p></td>
+<td><p>m s-1</p></td>
+<td><p>noahmp%forc%u1</p></td>
+<td><p>bottom layer zonal wind</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>inst_merid_wind_height_lowest</p></td>
+<td><p>m s-1</p></td>
+<td><p>noahmp%forc%v1</p></td>
+<td><p>bottom layer meridional wind</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>mean_down_sw_flx</p></td>
+<td><p>W m-2</p></td>
+<td><p>noahmp%forc%dswsfc</p></td>
+<td><p>mean downward SW heat flux</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>mean_down_lw_flx</p></td>
+<td><p>W m-2</p></td>
+<td><p>noahmp%forc%dlwflx</p></td>
+<td><p>mean downward LW heat flux</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Faxa_rainc</p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>noahmp%forc%tprcpc</p></td>
+<td><p>convective precipitation</p></td>
+<td><p>provided when coupled with CDEPS data atmosphere</p></td>
+</tr>
+<tr class="row-odd"><td><p>Faxa_rainl</p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>noahmp%forc%tprcpl</p></td>
+<td><p>large-scale precipitation</p></td>
+<td><p>provided when coupled with CDEPS data atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p>mean_prec_rate</p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>noahmp%forc%tprcp</p></td>
+<td><p>total precipitation</p></td>
+<td><p>total precipitation can be calculated by its components (tprcpc and tprcpl)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id4">
+<caption><span class="caption-number">Table 1.4 </span><span class="caption-text">Export fields</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 26%" />
+<col style="width: 26%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Standard Name</p></th>
+<th class="head"><p>Units</p></th>
+<th class="head"><p>Model Variable</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Sl_lfrin</p></td>
+<td><p>0-1</p></td>
+<td><p>noahmp%domain%frac</p></td>
+<td><p>land fraction</p></td>
+<td><p>required by mediator</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sl_t</p></td>
+<td><p>K</p></td>
+<td><p>noahmp%model%t2mmp</p></td>
+<td><p>land surface temperature</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. Driver and Coupling</a><ul>
+<li><a class="reference internal" href="#supported-drivers">1.1. Supported Drivers</a></li>
+<li><a class="reference internal" href="#noahmp-land-model-specific-esmf-configuration-options">1.2. NoahMP Land Model Specific ESMF Configuration Options</a></li>
+<li><a class="reference internal" href="#underlying-model-interfaces">1.3. Underlying Model Interfaces</a><ul>
+<li><a class="reference internal" href="#domain-creation">1.3.1. Domain Creation</a></li>
+<li><a class="reference internal" href="#initialization">1.3.2. Initialization</a></li>
+<li><a class="reference internal" href="#run">1.3.3. Run</a></li>
+<li><a class="reference internal" href="#finalize">1.3.4. Finalize</a></li>
+<li><a class="reference internal" href="#model-fields-used-for-coupling">1.3.5. Model Fields Used for Coupling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to the NoahMP Land Model User’s Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="BuildingAndRunning.html"
+                        title="next chapter"><span class="section-number">2. </span>Building and Running the UFS Weather Model Land Configurations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/DriverAndCoupling.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="BuildingAndRunning.html" title="2. Building and Running the UFS Weather Model Land Configurations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to the NoahMP Land Model User’s Guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">NoahMP Land Model Users Guide  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">1. </span>Driver and Coupling</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>
