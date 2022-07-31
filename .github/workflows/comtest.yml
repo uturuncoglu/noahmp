@@ -1,0 +1,65 @@
+name: comptest
+
+on:
+  push:
+    branches: [ feature/nuopc_cap ]
+  pull_request:
+    branches: [ feature/nuopc_cap ]
+  # following is required to prevent auto-removing cache entries after 7-days
+  schedule:
+    - cron: '0 0 * * MON'
+    - cron: '0 0 * * FRI'
+
+jobs:
+  create_environment:
+    runs-on: ubuntu-latest
+    
+    env:
+      INSTALL_DIR: $HOME/install
+
+    steps:
+      # checkout base repository
+      - name: Checkout NoahMP Repository
+        uses: actions/checkout@v3
+        with:
+          ref: feature/nuopc_cap
+
+      # prepare core environment
+      - name: Install Core Development Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install unzip file gringo
+          sudo apt-get install build-essential binutils-dev gfortran
+          sudo apt-get python-dev python-yaml
+          sudo apt-get python3-boto3 wget awscli ca-certificates
+
+      # checkout spack to create build environment
+      - name: Checkout Spack
+        uses: actions/checkout@v3
+        with:
+          repository: uturuncoglu/spack
+          path: spack
+          ref: hotfix/esmf
+
+      # create build environment
+      - name: Concretize Spack Environment Using YAML Specification
+        run: |
+          . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
+          spack -e ${{ github.workspace }}/.github/workflows concretize -f
+          
+      # restore build environment from cache
+      - name: Restore Build Environment From Cache
+        id: cache-spack
+        uses: actions/cache@v2
+        with:
+          path: ~/.spack-ci
+          key: spack-${{ hashFiles('**/spack.lock') }}
+          restore-keys: |
+            spack
+            
+      # create build environment
+      - name: Install Spack Packages
+        if: steps.cache-spack.outputs.cache-hit != 'true'
+        run: |
+          . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh 
+          spack -e ${{ github.workspace }}/.github/workflows install -j3
