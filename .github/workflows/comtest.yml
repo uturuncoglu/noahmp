@@ -51,7 +51,7 @@ jobs:
       # restore build environment from cache
       - name: Restore Build Environment From Cache
         id: cache-spack
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.spack-ci
           key: spack-${{ hashFiles('**/spack.lock') }}
