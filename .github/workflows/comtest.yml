@@ -139,8 +139,6 @@ jobs:
         with:
           path: ${{ github.workspace }}/run/INPUT
           key: input-${{ hashFiles('**/file_checksum.lock') }}
-          restore-keys: |
-            input-
             
       # download input files for components
       - name: Download Input Files
@@ -204,4 +202,3 @@ jobs:
           export PATH=$HOME/.spack-ci/view/bin:$PATH
           cd ${{ github.workspace }}/run
           mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
-          cat PET0.ESMF_LogFile
