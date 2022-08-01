@@ -144,7 +144,7 @@ jobs:
             
       # download input files for components
       - name: Download Input Files
-        if: ${{ steps.cache-input.outputs.cache-hit == 'false' }}
+        if: steps.cache-input.outputs.cache-hit != 'true'
         run: |
           export PATH=$HOME/.spack-ci/view/bin:$PATH
           mkdir -p ${{ github.workspace }}/run/INPUT
