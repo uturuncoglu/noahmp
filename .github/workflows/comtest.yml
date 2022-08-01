@@ -131,25 +131,33 @@ jobs:
             -DPIO_PREFIX=$HOME/.spack-ci/view .
           make
           make install
-          
+     
+      # restore input files from cache
+      - name: Restore Input Files From Cache
+        id: cache-input
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/run/INPUT
+          key: input-${{ hashFiles('**/file_checksum.lock') }}
+          restore-keys: |
+            input-
+            
       # download input files for components
       - name: Download Input Files
-        if: steps.cache-input.outputs.cache-hit != 'true'
+        if: ${{ steps.cache-input.outputs.cache-hit == 'false' }}
         run: |
           export PATH=$HOME/.spack-ci/view/bin:$PATH
           mkdir -p ${{ github.workspace }}/run/INPUT
           cd ${{ github.workspace }}/run/INPUT
           python3 ${{ github.workspace }}/driver/scripts/get_input.py --ifile ${{ github.workspace }}/driver/nuopc_drv.yaml
 
-      # restore input files from cache
-      - name: Restore Input Files From Cache
-        id: cache-input
-        uses: actions/cache@v2
+      # checkout configuration files and additional input files for noahmp
+      - name: Checkout Generic NUOPC Driver
+        uses: actions/checkout@v3
         with:
-          path: ${{ github.workspace }}/run/INPUT
-          key: input-${{ hashFiles('**/file_checksum.lock') }}
-          restore-keys: |
-            input-
+          repository: uturuncoglu/noahmp_data
+          path: noahmp_data
+          ref: main
 
       # checkout cime for ParamGen
       - name: Checkout CIME
