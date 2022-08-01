@@ -106,4 +106,27 @@ jobs:
           make
           make install
 
+      # checkout generic driver
+      - name: Checkout Generic NUOPC Driver
+        uses: actions/checkout@v3
+        with:
+          repository: uturuncoglu/GenericNUOPCDriver
+          path: driver
+          ref: main
 
+      # build and install driver
+      - name: Build and Install Generic NUOPC Driver
+        run: |
+          export PATH=$HOME/.spack-ci/view/bin:$PATH
+          export ESMFMKFILE=$HOME/.spack-ci/view/lib/esmf.mk
+          export NetCDF_ROOT=`nc-config --prefix`
+          export ATM_LIB_DIR=${{ env.INSTALL_DIR }}/lib
+          export ATM_INC_DIR=${{ env.INSTALL_DIR }}/include
+          export LND_LIB_DIR=${{ env.INSTALL_DIR }}/lib
+          export LND_INC_DIR=${{ env.INSTALL_DIR }}/mod
+          export FC=mpif90
+          cd ${{ github.workspace }}/driver
+          cmake -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
+            -DPIO_PREFIX=$HOME/.spack-ci/view .
+          make
+          make install
