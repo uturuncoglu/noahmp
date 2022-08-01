@@ -55,8 +55,6 @@ jobs:
         with:
           path: ~/.spack-ci
           key: spack-${{ hashFiles('**/spack.lock') }}
-          restore-keys: |
-            spack-
             
       # create build environment
       - name: Install Spack Packages
