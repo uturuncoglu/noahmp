@@ -147,3 +147,49 @@ jobs:
         with:
           path: ${{ github.workspace }}/run/INPUT
           key: input-${{ hashFiles('**/file_checksum.lock') }}
+
+      # checkout cime for ParamGen
+      - name: Checkout CIME
+        uses: actions/checkout@v3
+        with:
+          repository: uturuncoglu/cime
+          path: cime
+          ref: feature/paramgen_nuopc
+          
+      # build and install cime and generate config files
+      - name: Build and Install CIME
+        run: |
+          cd ${{ github.workspace }}/cime
+          python3 setup.py build
+          python3 setup.py install --user install
+          export PYTHONPATH=find $HOME/.local/lib/. -name "CIME-*" | xargs dirname`:$PYTHONPATH
+          echo $PYTHONPATH
+          cd ${{ github.workspace }}/driver/scripts
+          INPUT_DIR='INPUT' \
+          DATAMODE='CLMNCEP' \ 
+          MODEL_MESHFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc' \
+          MODEL_MASKFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc' \
+          NX_GLOBAL=144 \
+          NY_GLOBAL=96 \
+          python3 gen_config.py --ifile ../nuopc_drv.yaml
+          
+      # get configuration files
+      - name: Move Configuration Files to Input Directory
+        run: |
+          export PATH=$HOME/.spack-ci/view/bin:$PATH 
+          cd ${{ github.workspace }}/run/INPUT
+          mv ${{ github.workspace }}/noahmp_data/INPUT_ex/* .
+          ln -s grid_spec.nc C96_mosaic.nc
+          cd ${{ github.workspace }}/run
+          cp ${{ github.workspace }}/driver/scripts/datm* .
+          cp ${{ github.workspace }}/driver/scripts/nuopc.configure .
+          cp ${{ github.workspace }}/noahmp_data/fd.yaml .
+          cp ${{ github.workspace }}/noahmp_data/input.nml .
+          
+      # run application
+      - name: Run Application
+        run: |
+          export PATH=$HOME/.spack-ci/view/bin:$PATH
+          cd ${{ github.workspace }}/run
+          mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
+          cat PET0.ESMF_LogFile
