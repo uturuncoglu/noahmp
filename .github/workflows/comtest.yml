@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
+      # installation location for spack and other components
       INSTALL_DIR: $HOME/install
 
     steps:
