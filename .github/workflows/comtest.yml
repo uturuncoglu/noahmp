@@ -55,6 +55,8 @@ jobs:
         with:
           path: ~/.spack-ci
           key: spack-${{ hashFiles('**/spack.lock') }}
+          restore-keys: |
+            spack-
             
       # create build environment
       - name: Install Spack Packages
@@ -137,6 +139,8 @@ jobs:
         with:
           path: ${{ github.workspace }}/run/INPUT
           key: input-${{ hashFiles('**/file_checksum.lock') }}
+          #restore-keys: |
+          #  input-
             
       # download input files for components
       - name: Download Input Files
