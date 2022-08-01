@@ -55,7 +55,7 @@ jobs:
           path: ~/.spack-ci
           key: spack-${{ hashFiles('**/spack.lock') }}
           restore-keys: |
-            spack
+            spack-
             
       # create build environment
       - name: Install Spack Packages
@@ -63,3 +63,47 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh 
           spack -e ${{ github.workspace }}/.github/workflows install -j3
+ 
+      # build and install component
+      # need to install with openmp support since fms build with it
+      # TODO: update fms in spack.yaml as fms~openmp to build it without openmp support 
+      - name: Build and Install NoahMP
+        run: |
+          export PATH=$HOME/.spack-ci/view/bin:$PATH
+          export ESMFMKFILE=$HOME/.spack-ci/view/lib/esmf.mk
+          export NetCDF_ROOT=`nc-config --prefix`
+          export FC=gfortran
+          cd ${{ github.workspace }}
+          mkdir build
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DOPENMP=ON ../
+          make
+          make install
+          
+      # checkout data models
+      - name: Checkout CDEPS
+        uses: actions/checkout@v3
+        with:
+          repository: uturuncoglu/CDEPS
+          path: cdeps
+          ref: hotfix/std_build      
+      
+      # build and install data models
+      - name: Build and Install CDEPS
+        run: |
+          export PATH=$HOME/.spack-ci/view/bin:$PATH
+          export ESMFMKFILE=$HOME/.spack-ci/view/lib/esmf.mk
+          cd ${{ github.workspace }}/cdeps
+          mkdir build
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
+            -DPIO_C_LIBRARY=$HOME/.spack-ci/view/lib \
+            -DPIO_C_INCLUDE_DIR=$HOME/.spack-ci/view/include \
+            -DPIO_Fortran_LIBRARY=$HOME/.spack-ci/view/lib \
+            -DPIO_Fortran_INCLUDE_DIR=$HOME/.spack-ci/view/include \
+            -DCMAKE_Fortran_FLAGS="-ffree-line-length-none -ffixed-line-length-none" \
+            -DDISABLE_FoX=ON ../
+          make
+          make install
+
+
