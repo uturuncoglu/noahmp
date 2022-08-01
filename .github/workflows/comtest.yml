@@ -131,6 +131,14 @@ jobs:
           make
           make install
 
+      # restore input files from cache
+      - name: Restore Input Files From Cache
+        id: cache-input
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/run/INPUT
+          key: input-${{ hashFiles('**/file_checksum.lock') }}
+          
       # download input files for components
       - name: Download Input Files
         if: steps.cache-input.outputs.cache-hit != 'true'
@@ -139,14 +147,6 @@ jobs:
           mkdir -p ${{ github.workspace }}/run/INPUT
           cd ${{ github.workspace }}/run/INPUT
           python3 ${{ github.workspace }}/driver/scripts/get_input.py --ifile ${{ github.workspace }}/driver/nuopc_drv.yaml
-
-      # restore input files from cache
-      - name: Restore Input Files From Cache
-        id: cache-input
-        uses: actions/cache@v2
-        with:
-          path: ${{ github.workspace }}/run/INPUT
-          key: input-${{ hashFiles('**/file_checksum.lock') }}
 
       # checkout cime for ParamGen
       - name: Checkout CIME
@@ -162,7 +162,7 @@ jobs:
           cd ${{ github.workspace }}/cime
           python3 setup.py build
           python3 setup.py install --user install
-          export PYTHONPATH=find $HOME/.local/lib/. -name "CIME-*" | xargs dirname`:$PYTHONPATH
+          export PYTHONPATH=`find $HOME/.local/lib/. -name "CIME-*" | xargs dirname`:$PYTHONPATH
           echo $PYTHONPATH
           cd ${{ github.workspace }}/driver/scripts
           INPUT_DIR='INPUT' \
