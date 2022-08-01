@@ -131,14 +131,6 @@ jobs:
             -DPIO_PREFIX=$HOME/.spack-ci/view .
           make
           make install
-
-      # restore input files from cache
-      - name: Restore Input Files From Cache
-        id: cache-input
-        uses: actions/cache@v2
-        with:
-          path: ${{ github.workspace }}/run/INPUT
-          key: input-${{ hashFiles('**/file_checksum.lock') }}
           
       # download input files for components
       - name: Download Input Files
@@ -148,6 +140,16 @@ jobs:
           mkdir -p ${{ github.workspace }}/run/INPUT
           cd ${{ github.workspace }}/run/INPUT
           python3 ${{ github.workspace }}/driver/scripts/get_input.py --ifile ${{ github.workspace }}/driver/nuopc_drv.yaml
+
+      # restore input files from cache
+      - name: Restore Input Files From Cache
+        id: cache-input
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/run/INPUT
+          key: input-${{ hashFiles('**/file_checksum.lock') }}
+          restore-keys: |
+            input-
 
       # checkout cime for ParamGen
       - name: Checkout CIME
@@ -166,12 +168,13 @@ jobs:
           export PYTHONPATH=`find $HOME/.local/lib/. -name "CIME-*" | xargs dirname`:$PYTHONPATH
           echo $PYTHONPATH
           cd ${{ github.workspace }}/driver/scripts
-          INPUT_DIR='INPUT' \
-          DATAMODE='CLMNCEP' \ 
-          MODEL_MESHFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc' \
-          MODEL_MASKFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc' \
-          NX_GLOBAL=144 \
-          NY_GLOBAL=96 \
+          ls -al
+          export INPUT_DIR='INPUT'
+          export DATAMODE='CLMNCEP'
+          export MODEL_MESHFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc'
+          export MODEL_MASKFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc'
+          export NX_GLOBAL=144
+          export NY_GLOBAL=96
           python3 gen_config.py --ifile ../nuopc_drv.yaml
           
       # get configuration files
