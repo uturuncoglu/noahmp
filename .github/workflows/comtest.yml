@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ feature/nuopc_cap ]
   # following is required to prevent auto-removing cache entries after 7-days
+  # this only works on default branch
   schedule:
     - cron: '0 0 * * MON'
     - cron: '0 0 * * FRI'
