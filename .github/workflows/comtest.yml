@@ -214,7 +214,7 @@ jobs:
           path: ${{ github.workspace }}/run
           key: baseline-${{ hashFiles('output.hashes') }}
           restore-keys: |
-            baseline- 
+            baseline-
             
       # calculate hashes
       - name: Calculate Hashes and Create Baseline Hash File
@@ -228,3 +228,4 @@ jobs:
           cat output.hashes
           #echo "::set-output name=FILE::output.hashes"
           echo ${{ steps.cache-hash-file.outputs.cache-hit }}
+
