@@ -239,7 +239,7 @@ jobs:
       - name: Testing
         run: |
           echo ${{ steps.compare-baseline.outputs.CHECK_RESULT }}
-          echo `if ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'; then echo 1; else echo 0; fi
+          echo `if ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'; then echo 1; else echo 0; fi`
 
       # Force to fail if the results are not matched with baseline
       #- name: Compare with Baseline
