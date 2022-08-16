@@ -211,7 +211,7 @@ jobs:
         id: cache-hash-file
         uses: actions/cache@v3
         with:
-          path: cd ${{ github.workspace }}/run
+          path: ${{ github.workspace }}/run
           key: baseline-${{ hashFiles('**/output.hashes') }}
           restore-keys: |
             baseline- 
