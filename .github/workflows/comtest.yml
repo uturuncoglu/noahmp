@@ -227,8 +227,15 @@ jobs:
             baseline-
           
       # compare with the baseline
+      #- name: Compare with Baseline
+      #  run: |
+      #    
+      #    echo "::set-output name=TAG_NAME::$(cat projectFile | grep -Po '(?<=Version>).*(?=</Version>)')"
+      
+      
+      
       - name: Compare with Baseline
-        if: cmp --silent output.hashes output.hashes.current
+        if: $(cmp --silent output.hashes output.hashes.current)
         uses: actions/github-script@v3
         with:
           script: |
