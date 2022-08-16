@@ -201,15 +201,24 @@ jobs:
           
       # run application
       - name: Run Application
-        id: run-app
         run: |
           export PATH=$HOME/.spack-ci/view/bin:$PATH
           cd ${{ github.workspace }}/run
           mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
-          echo "::set-output name=FILELIST::$(find . -name 'comp.test.lnd.out.*.nc' -print)"
-      
-      # hashes
-      - name: Calculate Hashes
+
+      # restore baseline hash file from cache
+      - name: Restore Baseline Hash File From Cache
+        id: cache-hash-file
+        uses: actions/cache@v3
+        with:
+          path: cd ${{ github.workspace }}/run
+          key: baseline-${{ hashFiles('**/output.hashes') }}
+          restore-keys: |
+            baseline- 
+            
+      # calculate hashes
+      - name: Calculate Hashes and Create Baseline Hash File
+        id: calc-hashes
         run: |
           cd ${{ github.workspace }}/run
           lst=`ls -al comp.test.lnd.out.*.nc | awk '{print $9}'`
@@ -217,3 +226,5 @@ jobs:
             md5sum $i >> output.hashes
           done
           cat output.hashes
+          #echo "::set-output name=FILE::output.hashes"
+          echo ${{ steps.cache-hash-file.outputs.cache-hit }}
