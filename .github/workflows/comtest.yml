@@ -212,9 +212,9 @@ jobs:
       - name: Calculate Hashes
         run: |
           cd ${{ github.workspace }}/run
-          IFS="," read -a myarray <<< ${{ steps.run-app.outputs.FILELIST }}
-          for i in "${myarray[@]}"; do
-            md5sum ${i} >> output.hashes
+          lst=`ls -al comp.test.lnd.out.*.nc | awk '{print $9}'`
+          for i in $lst; do
+            md5sum $i >> output.hashes
           done
           cat output.hashes
 
