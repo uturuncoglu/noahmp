@@ -215,7 +215,6 @@ jobs:
             md5sum $i >> output.hashes
           done
           cp output.hashes output.hashes.current
-          cat output.hashes
           
       # restore baseline hash file from cache
       - name: Restore Baseline Hash File From Cache
@@ -227,15 +226,19 @@ jobs:
             baseline-
           
       # compare with the baseline
-      #- name: Compare with Baseline
-      #  run: |
-      #    
-      #    echo "::set-output name=TAG_NAME::$(cat projectFile | grep -Po '(?<=Version>).*(?=</Version>)')"
-      
-      
-      
       - name: Compare with Baseline
-        if: $(cmp --silent output.hashes output.hashes.current)
+        id: compare-baseline 
+        run: |
+          cd ${{ github.workspace }}/run
+          echo "Baseline:"
+          cat output.hashes
+          echo "Current Run:"
+          cat output.hashes.current        
+          echo "::set-output name=CHECK_RESULT::$(cmp --silent output.hashes output.hashes.current && echo 'true' || echo 'false' )"
+      
+      # Force to fail if the results are not matched with baseline
+      - name: Compare with Baseline
+        if: ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'
         uses: actions/github-script@v3
         with:
           script: |
