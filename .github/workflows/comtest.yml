@@ -201,12 +201,18 @@ jobs:
           
       # run application
       - name: Run Application
+        id: run-app
         run: |
           export PATH=$HOME/.spack-ci/view/bin:$PATH
           cd ${{ github.workspace }}/run
           mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
-          ls -al
-          #${{ hashFiles('*.nc', 'test/**/*.ex', 'mix.lock') }}
-          
-      # create baseline branch
+          echo "::set-output name=FILELIST::$(find . -name 'comp.test.lnd.out.*.nc' -print)"
       
+      # hashes
+      - name: Calculate Hashes
+        run: |
+          IFS="," read -a myarray <<< ${{ steps.run-app.outputs.FILELIST }}
+          for i in "${myarray[@]}"; do
+            echo "${i} ${{ hashFiles(${i}) }}" >> output.hashes
+          done
+          cat output.hashes
