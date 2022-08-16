@@ -213,6 +213,6 @@ jobs:
         run: |
           IFS="," read -a myarray <<< ${{ steps.run-app.outputs.FILELIST }}
           for i in "${myarray[@]}"; do
-            echo ${i} ${{ hashFiles(${{i}}) }} >> output.hashes
+            md5sum ${i} >> output.hashes
           done
           cat output.hashes
