@@ -212,7 +212,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/run
-          key: baseline-${{ hashFiles('**/output.hashes') }}
+          key: baseline-${{ hashFiles('output.hashes') }}
           restore-keys: |
             baseline- 
             
