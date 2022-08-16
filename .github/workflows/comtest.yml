@@ -205,5 +205,8 @@ jobs:
           export PATH=$HOME/.spack-ci/view/bin:$PATH
           cd ${{ github.workspace }}/run
           mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
+          ls -al
+          #${{ hashFiles('*.nc', 'test/**/*.ex', 'mix.lock') }}
           
-          
+      # create baseline branch
+      
