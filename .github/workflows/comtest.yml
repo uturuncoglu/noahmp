@@ -206,26 +206,30 @@ jobs:
           cd ${{ github.workspace }}/run
           mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
 
-      # restore baseline hash file from cache
-      - name: Restore Baseline Hash File From Cache
-        id: cache-hash-file
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/run
-          key: baseline-${{ hashFiles('output.hashes') }}
-          restore-keys: |
-            baseline-
-            
       # calculate hashes
-      - name: Calculate Hashes and Create Baseline Hash File
-        id: calc-hashes
+      - name: Calculate Hashes of Output Files
         run: |
           cd ${{ github.workspace }}/run
           lst=`ls -al comp.test.lnd.out.*.nc | awk '{print $9}'`
           for i in $lst; do
             md5sum $i >> output.hashes
           done
+          cp output.hashes output.hashes.current
           cat output.hashes
-          #echo "::set-output name=FILE::output.hashes"
-          echo ${{ steps.cache-hash-file.outputs.cache-hit }}
-
+          
+      # restore baseline hash file from cache
+      - name: Restore Baseline Hash File From Cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/run
+          key: baseline-${{ hashFiles('output.hashes') }}
+          restore-keys: |
+            baseline-
+          
+      # compare with the baseline
+      - name: Compare with Baseline
+        if: cmp --silent output.hashes output.hashes.current
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('The results do not match with the baseline!')
