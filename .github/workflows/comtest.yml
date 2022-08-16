@@ -63,7 +63,8 @@ jobs:
       - name: Install Spack Packages
         if: steps.cache-spack.outputs.cache-hit != 'true'
         run: |
-          . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh 
+          . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
+          spack -e ${{ github.workspace }}/.spack concretize -f
           spack -e ${{ github.workspace }}/.spack install -j3
  
       # build and install component
