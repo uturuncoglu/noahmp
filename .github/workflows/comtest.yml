@@ -214,7 +214,6 @@ jobs:
           for i in $lst; do
             md5sum $i >> output_hash.txt
           done
-          cat output_hash.txt | awk '{print $1"A  "$2}' >& output_hash.txt
           cp output_hash.txt output_hash_baseline.txt
           
       # restore baseline hash file from cache
@@ -236,11 +235,6 @@ jobs:
           echo "Current Run:"
           cat output_hash.txt      
           echo "::set-output name=CHECK_RESULT::$(cmp --silent output_hash_baseline.txt output_hash.txt && echo 'true' || echo 'false' )"
-
-      - name: Testing
-        run: |
-          echo ${{ steps.compare-baseline.outputs.CHECK_RESULT }}
-          echo `if ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'; then echo 1; else echo 0; fi`
 
       # Force to fail if the results are not matched with baseline
       - name: Result of Baseline Check
