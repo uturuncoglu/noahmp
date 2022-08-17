@@ -214,6 +214,7 @@ jobs:
           for i in $lst; do
             md5sum $i >> output_hash.txt
           done
+          cat output_hash.txt | awk '{print $1"A  "$2}'
           cp output_hash.txt output_hash_baseline.txt
           
       # restore baseline hash file from cache
