@@ -243,10 +243,11 @@ jobs:
             echo "::set-output name=CHECK_RESULT::$(echo 'true')"
             #echo "::set-output name=CREATE_BASELINE::$(echo 'true')"
           fi
+          echo ${{ steps.compare-baseline.outputs.CHECK_RESULT }}
       
       # Force to fail if the results are not matched with the baseline
       - name: Result of Baseline Check
-        if: if ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'
+        if: ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'
         uses: actions/github-script@v3
         with:
           script: |
