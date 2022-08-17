@@ -214,16 +214,16 @@ jobs:
           for i in $lst; do
             md5sum $i >> output_hash.txt
           done
-          cp output_hash.txt output_hash_baseline.txt
+          #cp output_hash.txt output_hash_baseline.txt
           
       # restore baseline hash file from cache
-      - name: Restore Baseline Hash File From Cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/run/output_hash_baseline.txt
-          key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
-          restore-keys: |
-            baseline-
+      #- name: Restore Baseline Hash File From Cache
+      #  uses: actions/cache@v3
+      #  with:
+      #    path: ${{ github.workspace }}/run/output_hash_baseline.txt
+      #    key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
+      #    restore-keys: |
+      #      baseline-
           
       # compare with the baseline
       - name: Compare with Baseline
