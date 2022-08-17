@@ -212,16 +212,16 @@ jobs:
           cd ${{ github.workspace }}/run
           lst=`ls -al comp.test.lnd.out.*.nc | awk '{print $9}'`
           for i in $lst; do
-            md5sum $i >> output.hashes
+            md5sum $i >> output_hash.txt
           done
-          cp output.hashes output.hashes.current
+          cp output_hash.txt output_hash_baseline.txt
           
       # restore baseline hash file from cache
       - name: Restore Baseline Hash File From Cache
         uses: actions/cache@v3
         with:
-          path: ${{ github.workspace }}/run
-          key: baseline-${{ hashFiles('output.hashes') }}
+          path: ${{ github.workspace }}/run/output_hash_baseline.txt
+          key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
           restore-keys: |
             baseline-
           
@@ -231,10 +231,10 @@ jobs:
         run: |
           cd ${{ github.workspace }}/run
           echo "Baseline:"
-          cat output.hashes
+          cat output_hash_baseline.txt
           echo "Current Run:"
-          cat output.hashes.current        
-          echo "::set-output name=CHECK_RESULT::$(cmp --silent output.hashes output.hashes.current && echo 'true' || echo 'false' )"
+          cat output_hash.txt      
+          echo "::set-output name=CHECK_RESULT::$(cmp --silent output_hash_baseline.txt output_hash.txt && echo 'true' || echo 'false' )"
 
       - name: Testing
         run: |
