@@ -214,29 +214,37 @@ jobs:
           for i in $lst; do
             md5sum $i >> output_hash.txt
           done
-          #cp output_hash.txt output_hash_baseline.txt
-          
+
       # restore baseline hash file from cache
-      #- name: Restore Baseline Hash File From Cache
-      #  uses: actions/cache@v3
-      #  with:
-      #    path: ${{ github.workspace }}/run/output_hash_baseline.txt
-      #    key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
-      #    restore-keys: |
-      #      baseline-
-          
+      - name: Restore Baseline Hash File From Cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/run/output_hash_baseline.txt
+          key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
+          restore-keys: |
+            baseline-
+
       # compare with the baseline
       - name: Compare with Baseline
         id: compare-baseline 
         run: |
           cd ${{ github.workspace }}/run
-          echo "Baseline:"
-          cat output_hash_baseline.txt
-          echo "Current Run:"
-          cat output_hash.txt      
-          echo "::set-output name=CHECK_RESULT::$(cmp --silent output_hash_baseline.txt output_hash.txt && echo 'true' || echo 'false' )"
-
-      # Force to fail if the results are not matched with baseline
+          # compare against the baseline
+          if test -f "output_hash_baseline.txt"; then
+            echo "Baseline:"
+            cat output_hash_baseline.txt
+            echo "Current Run:"
+            cat output_hash.txt
+            echo "::set-output name=CHECK_RESULT::$(cmp --silent output_hash_baseline.txt output_hash.txt && echo 'true' || echo 'false' )"
+            #echo "::set-output name=CREATE_BASELINE::$(echo 'false')"
+          # there is no baseline, just copy current one ad baseline, will be cached later  
+          else
+            cp output_hash.txt output_hash_baseline.txt
+            echo "::set-output name=CHECK_RESULT::$(echo 'true')"
+            #echo "::set-output name=CREATE_BASELINE::$(echo 'true')"
+          fi
+      
+      # Force to fail if the results are not matched with the baseline
       - name: Result of Baseline Check
         if: if ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'
         uses: actions/github-script@v3
