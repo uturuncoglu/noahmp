@@ -216,7 +216,7 @@ jobs:
           done
           cat output_hash.txt
           # just for testing baseline check, manupilate the results to check false condition
-          cat output_hash.txt | awk '{print $1'A  '$2}' > output_hash.txt
+          cat output_hash.txt | awk '{print $1"A  "$2}' > output_hash.txt
           cat output_hash.txt
 
       # restore baseline hash file from cache
