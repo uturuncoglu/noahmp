@@ -251,7 +251,7 @@ jobs:
           
       # Force to fail if the results are not matched with the baseline
       - name: Result of Baseline Check
-        if: ${{ steps.compare-baseline.outputs.CHECK_RESULT }} != 'true'
+        if: steps.compare-baseline.outputs.CHECK_RESULT == 'false'
         uses: actions/github-script@v3
         with:
           script: |
