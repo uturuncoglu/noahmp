@@ -214,9 +214,12 @@ jobs:
           for i in $lst; do
             md5sum $i >> output_hash.txt
           done
+          echo "before"
           cat output_hash.txt
           # just for testing baseline check, manupilate the results to check false condition
-          cat output_hash.txt | awk '{print $1"A  "$2}' >& output_hash.txt
+          echo "after"
+          cat output_hash.txt | awk '{print $1"A  "$2}' >& tmp.txt
+          mv tmp.txt output_hash.txt
           cat output_hash.txt
 
       # restore baseline hash file from cache
