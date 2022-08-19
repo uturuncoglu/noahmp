@@ -146,7 +146,6 @@ contains
     integer                     :: i, step
     integer                     :: year, month, day, hour, minute, second
     real(r8)                    :: now_time
-    real(r8), save, allocatable :: rho(:)
     character(len=cl)           :: filename
     logical                     :: restart_write
     type(ESMF_VM)               :: vm
@@ -213,15 +212,9 @@ contains
        end do
     end if
 
-    ! TODO: CDEPS data atmosphere Sa_z (noahmp%forc%hgt) is 30 meters but UFS land driver uses 10 meters?
-    ! There could be option in nems.configure to overwrite Sa_z
-    noahmp%model%zf = 10.0_r8
+    noahmp%model%zf = noahmp%forc%hgt
 
-    !----------------------
-    ! allocate required temporary variable
-    !----------------------
-
-    if (.not. allocated(rho)) allocate(rho(noahmp%domain%begl:noahmp%domain%endl))
+    noahmp%model%do_mynnsfclay = .false.
 
     !----------------------
     ! interpolate monthly data, vegetation fraction and mean sfc diffuse sw albedo (NOT used)
@@ -249,9 +242,8 @@ contains
     ! set variables from forcing  
     !----------------------
 
-    ! since wind direction is not important for NoahMP, just provide speed
-    noahmp%model%u1 = noahmp%forc%wind
-    noahmp%model%v1 = 0.0_r8
+    noahmp%model%u1 = noahmp%forc%u1
+    noahmp%model%v1 = noahmp%forc%v1
 
     noahmp%model%snet = noahmp%forc%dswsfc*(1.0_r8-noahmp%model%sfalb)
     noahmp%model%srflag = 0.0_r8
@@ -293,7 +285,7 @@ contains
          noahmp%forc%dswsfc    , noahmp%model%snet      , noahmp%static%delt     , &
          noahmp%model%tg3      , noahmp%model%cm        , noahmp%model%ch        , &
          noahmp%model%prsl1    , noahmp%model%prslk1    , noahmp%model%prslki    , &
-         noahmp%model%prsik1   , noahmp%model%zf        , &
+         noahmp%model%prsik1   , noahmp%model%zf        , noahmp%model%pblh      , &
          noahmp%model%dry      , noahmp%forc%wind       , noahmp%model%slopetyp  , &
          noahmp%model%shdmin   , noahmp%model%shdmax    , noahmp%model%snoalb    , &
          noahmp%model%sfalb    , noahmp%model%flag_iter , con_g                  , &
@@ -318,6 +310,8 @@ contains
          noahmp%model%rb1      , noahmp%model%fm1       , noahmp%model%fh1       , &
          noahmp%model%ustar1   , noahmp%model%stress1   , noahmp%model%fm101     , &
          noahmp%model%fh21     , &
+         noahmp%model%rmol1    , noahmp%model%flhc1     , noahmp%model%flqc1     , &
+         noahmp%model%do_mynnsfclay, &
     ! --- Noah MP specific
          noahmp%model%snowxy   , noahmp%model%tvxy      , noahmp%model%tgxy      , &
          noahmp%model%canicexy , noahmp%model%canliqxy  , noahmp%model%eahxy     , &
@@ -348,9 +342,9 @@ contains
     ! unit conversions
     !----------------------
 
-    rho = noahmp%model%prsl1/(con_rd*noahmp%forc%t1*(1.0_r8+con_fvirt*noahmp%forc%q1)) 
-    noahmp%model%hflx = noahmp%model%hflx*rho*con_cp
-    noahmp%model%evap = noahmp%model%evap*rho*con_hvap
+    noahmp%model%rho = noahmp%model%prsl1/(con_rd*noahmp%forc%t1*(1.0_r8+con_fvirt*noahmp%forc%q1)) 
+    noahmp%model%hflx = noahmp%model%hflx*noahmp%model%rho*con_cp
+    noahmp%model%evap = noahmp%model%evap*noahmp%model%rho*con_hvap
     where(noahmp%forc%dswsfc>0.0_r8 .and. noahmp%model%sfalb<0.0_r8) noahmp%forc%dswsfc = 0.0_r8
 
     !----------------------
@@ -367,7 +361,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! check the output frequency before calling write method
-    if (mod(hour, noahmp%nmlist%output_freq) == 0) then
+    if (mod(int(now_time), noahmp%nmlist%output_freq) == 0) then
        write(filename, fmt='(a,i4,a1,i2.2,a1,i2.2,a1,i5.5)') &
           trim(noahmp%nmlist%case_name)//'.lnd.out.', &
           year, '-', month, '-', day, '-', hour*60*60+minute*60+second 

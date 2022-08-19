@@ -91,7 +91,7 @@ contains
     ! import from atm
     call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_z')
     call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_tbot')
-    call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_pbot')
+    call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_pslv')
     call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_shum')
     call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_u')
     call fldlist_add(fldsToLnd_num, fldsToLnd, 'Sa_v')
@@ -210,7 +210,7 @@ contains
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     do n = 1, numflds
-       stdname = fldList(n)%stdname
+       stdname = trim(fldList(n)%stdname)
        if (NUOPC_IsConnected(state, fieldName=stdname)) then
           ! Create the field
           if (fldlist(n)%ungridded_lbound > 0 .and. fldlist(n)%ungridded_ubound > 0) then
@@ -270,7 +270,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getimport_1d(importState, 'Sa_tbot'  , noahmp%forc%t1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call state_getimport_1d(importState, 'Sa_pbot'  , noahmp%forc%ps, rc=rc)
+    call state_getimport_1d(importState, 'Sa_pslv'  , noahmp%forc%ps, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call state_getimport_1d(importState, 'Sa_shum'  , noahmp%forc%q1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -353,7 +353,7 @@ contains
   !===============================================================================
   subroutine state_getimport_1d(state, fldname, arr1d, rc)
 
-    ! fill in ctsm import data for 1d field
+    ! fill in noahmp import data for 1d field
 
     use ESMF, only : ESMF_LOGERR_PASSTHRU, ESMF_END_ABORT, ESMF_LogFoundError
     use ESMF, only : ESMF_Finalize
@@ -383,7 +383,7 @@ contains
   !===============================================================================
   subroutine state_setexport_1d(state, fldname, arr1d, minus, rc)
 
-    ! fill in ctsm export data for 1d field
+    ! fill in noahmp export data for 1d field
 
     use ESMF, only : ESMF_LOGERR_PASSTHRU, ESMF_END_ABORT, ESMF_LogFoundError
     use ESMF, only : ESMF_Finalize
@@ -409,6 +409,8 @@ contains
     else
        l_minus = .false.
     end if
+
+    if (.not. NUOPC_IsConnected(state, fieldName=trim(fldname))) return
 
     call state_getfldptr(state, trim(fldname), fldptr1d=fldptr1d, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

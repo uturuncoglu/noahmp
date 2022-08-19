@@ -91,6 +91,7 @@ module lnd_comp_types
      real(kind=kp), allocatable :: prslk1     (:)   ! dimensionless exner function at surface adjacent layer
      real(kind=kp), allocatable :: prsik1     (:)   ! surface dimensionless exner function
      real(kind=kp), allocatable :: zf         (:)   ! height of bottom layer (m)
+     real(kind=kp), allocatable :: pblh       (:)   ! PBL thickness (m)
      logical      , allocatable :: dry        (:)   ! = T if a point with any land
      integer      , allocatable :: slopetyp   (:)   ! class of sfc slope (integer index)
      real(kind=kp), allocatable :: alb_monthly(:,:) ! surface albedo
@@ -122,6 +123,10 @@ module lnd_comp_types
      real(kind=kp), allocatable :: stress1    (:)   ! composite surface stress
      real(kind=kp), allocatable :: fm101      (:)   ! composite 2-meter momemtum stability
      real(kind=kp), allocatable :: fh21       (:)   ! composite 10-meter heat/moisture stability
+     real(kind=kp), allocatable :: rmol1      (:)   ! one over obukhov length
+     real(kind=kp), allocatable :: flhc1      (:)   ! surface exchange coefficient for heat
+     real(kind=kp), allocatable :: flqc1      (:)   ! surface exchange coefficient for moisture
+     logical                    :: do_mynnsfclay    ! flag to activate MYNN surface layer
      real(kind=kp), allocatable :: snowxy     (:)   ! actual no. of snow layers
      real(kind=kp), allocatable :: tvxy       (:)   ! vegetation leaf temperature (K)
      real(kind=kp), allocatable :: tgxy       (:)   ! bulk ground surface temperature (K)
@@ -177,6 +182,7 @@ module lnd_comp_types
      real(kind=kp), allocatable :: t2mmp      (:)   ! combined T2m from tiles
      real(kind=kp), allocatable :: q2mp       (:)   ! combined q2m from tiles
      real(kind=kp), allocatable :: zvfun      (:)   ! some function of vegetation used for gfs stability
+     real(kind=kp), allocatable :: rho        (:)   ! air density
      ! variables in dimensions im and km
      real(kind=kp), allocatable :: smc      (:,:)   ! total soil moisture content (fractional)
      real(kind=kp), allocatable :: stc      (:,:)   ! soil temp (K)
@@ -331,6 +337,7 @@ contains
     allocate(this%model%prslk1     (begl:endl))
     allocate(this%model%prsik1     (begl:endl))
     allocate(this%model%zf         (begl:endl))
+    allocate(this%model%pblh       (begl:endl))
     allocate(this%model%dry        (begl:endl))
     allocate(this%model%slopetyp   (begl:endl))
     allocate(this%model%alb_monthly(begl:endl,12))
@@ -362,6 +369,9 @@ contains
     allocate(this%model%stress1    (begl:endl))
     allocate(this%model%fm101      (begl:endl))
     allocate(this%model%fh21       (begl:endl))
+    allocate(this%model%rmol1      (begl:endl))
+    allocate(this%model%flhc1      (begl:endl))
+    allocate(this%model%flqc1      (begl:endl))
     allocate(this%model%snowxy     (begl:endl))
     allocate(this%model%tvxy       (begl:endl))
     allocate(this%model%tgxy       (begl:endl))
@@ -417,6 +427,7 @@ contains
     allocate(this%model%t2mmp      (begl:endl))
     allocate(this%model%q2mp       (begl:endl))
     allocate(this%model%zvfun      (begl:endl))
+    allocate(this%model%rho        (begl:endl))
 
     allocate(this%model%smc        (begl:endl,km))
     allocate(this%model%stc        (begl:endl,km))
@@ -475,6 +486,7 @@ contains
     this%model%prslk1      = 0.0_kp
     this%model%prsik1      = 0.0_kp
     this%model%zf          = 0.0_kp
+    this%model%pblh        = 0.0_kp
     this%model%dry         = .false.
     this%model%slopetyp    = 0
     this%model%alb_monthly = 0.0_kp
@@ -506,6 +518,9 @@ contains
     this%model%stress1     = 0.0_kp
     this%model%fm101       = 0.0_kp
     this%model%fh21        = 0.0_kp
+    this%model%rmol1       = 0.0_kp
+    this%model%flhc1       = 0.0_kp
+    this%model%flqc1       = 0.0_kp
     this%model%snowxy      = 0.0_kp
     this%model%tvxy        = 0.0_kp
     this%model%tgxy        = 0.0_kp
@@ -562,6 +577,7 @@ contains
     this%model%t2mmp       = 0.0_kp
     this%model%q2mp        = 0.0_kp
     this%model%zvfun       = 0.0_kp
+    this%model%rho         = 0.0_kp
     this%model%smc         = 0.0_kp
     this%model%stc         = 0.0_kp
     this%model%slc         = 0.0_kp
