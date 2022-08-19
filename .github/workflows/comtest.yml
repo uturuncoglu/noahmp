@@ -255,5 +255,3 @@ jobs:
         #  script: |
         #    core.setFailed('The results do not match with the baseline!')
 
-
-
