@@ -177,7 +177,6 @@ jobs:
           export PYTHONPATH=`find $HOME/.local/lib/. -name "CIME-*" | xargs dirname`:$PYTHONPATH
           echo $PYTHONPATH
           cd ${{ github.workspace }}/driver/scripts
-          ls -al
           export INPUT_DIR='INPUT'
           export DATAMODE='CLMNCEP'
           export MODEL_MESHFILE='INPUT/fv1.9x2.5_141008_ESMFmesh.nc'
@@ -214,13 +213,12 @@ jobs:
           for i in $lst; do
             md5sum $i >> output_hash.txt
           done
-          echo "before"
           cat output_hash.txt
           # just for testing baseline check, manupilate the results to check false condition
-          echo "after"
-          cat output_hash.txt | awk '{print $1"A  "$2}' >& tmp.txt
-          mv tmp.txt output_hash.txt
-          cat output_hash.txt
+          #echo "after"
+          #cat output_hash.txt | awk '{print $1"A  "$2}' >& tmp.txt
+          #mv tmp.txt output_hash.txt
+          #cat output_hash.txt
 
       # restore baseline hash file from cache
       - name: Restore Baseline Hash File From Cache
@@ -251,9 +249,9 @@ jobs:
             #echo "::set-output name=CREATE_BASELINE::$(echo 'true')"
           fi
 
-      - name: Debug
-        run: |
-          echo ${{ steps.compare-baseline.outputs.CHECK_RESULT }}
+      #- name: Debug
+      #  run: |
+      #    echo ${{ steps.compare-baseline.outputs.CHECK_RESULT }}
           
       # Force to fail if the results are not matched with the baseline
       - name: Result of Baseline Check
