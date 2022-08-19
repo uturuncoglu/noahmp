@@ -2,9 +2,9 @@ name: comptest
 
 on:
   push:
-    branches: [ feature/nuopc_cap ]
+    branches: [ feature/nuopc_cap_new ]
   pull_request:
-    branches: [ feature/nuopc_cap ]
+    branches: [ feature/nuopc_cap_new ]
   # following is required to prevent auto-removing cache entries after 7-days
   # this only works on default branch
   schedule:
@@ -207,42 +207,42 @@ jobs:
           mpirun --oversubscribe -np 6 --allow-run-as-root ${{ env.INSTALL_DIR }}/bin/driver
 
       # calculate hashes
-      #- name: Calculate Hashes of Output Files
-      #  run: |
-      #    cd ${{ github.workspace }}/run
-      #    lst=`ls -al comp.test.lnd.out.*.nc | awk '{print $9}'`
-      #    for i in $lst; do
-      #      md5sum $i >> output_hash.txt
-      #    done
+      - name: Calculate Hashes of Output Files
+        run: |
+          cd ${{ github.workspace }}/run
+          lst=`ls -al comp.test.lnd.out.*.nc | awk '{print $9}'`
+          for i in $lst; do
+            md5sum $i >> output_hash.txt
+          done
 
       # restore baseline hash file from cache
-      #- name: Restore Baseline Hash File From Cache
-      #  uses: actions/cache@v3
-      #  with:
-      #    path: ${{ github.workspace }}/run/output_hash_baseline.txt
-      #    key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
-      #    restore-keys: |
-      #      baseline-
+      - name: Restore Baseline Hash File From Cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/run/output_hash_baseline.txt
+          key: baseline-${{ hashFiles('output_hash_baseline.txt') }}
+          restore-keys: |
+            baseline-
 
       # compare with the baseline
-      #- name: Compare with Baseline
-      #  id: compare-baseline 
-      #  run: |
-      #    cd ${{ github.workspace }}/run
-      #    # compare against the baseline
-      #    if test -f "output_hash_baseline.txt"; then
-      #      echo "Baseline:"
-      #      cat output_hash_baseline.txt
-      #      echo "Current Run:"
-      #      cat output_hash.txt
-      #      echo "::set-output name=CHECK_RESULT::$(cmp --silent output_hash_baseline.txt output_hash.txt && echo 'true' || echo 'false' )"
-      #      #echo "::set-output name=CREATE_BASELINE::$(echo 'false')"
-      #    # there is no baseline, just copy current one ad baseline, will be cached later  
-      #    else
-      #      cp output_hash.txt output_hash_baseline.txt
-      #      echo "::set-output name=CHECK_RESULT::$(echo 'true')"
-      #      #echo "::set-output name=CREATE_BASELINE::$(echo 'true')"
-      #    fi
+      - name: Compare with Baseline
+        id: compare-baseline 
+        run: |
+          cd ${{ github.workspace }}/run
+          # compare against the baseline
+          if test -f "output_hash_baseline.txt"; then
+            echo "Baseline:"
+            cat output_hash_baseline.txt
+            echo "Current Run:"
+            cat output_hash.txt
+            echo "::set-output name=CHECK_RESULT::$(cmp --silent output_hash_baseline.txt output_hash.txt && echo 'true' || echo 'false' )"
+            #echo "::set-output name=CREATE_BASELINE::$(echo 'false')"
+          # there is no baseline, just copy current one ad baseline, will be cached later  
+          else
+            cp output_hash.txt output_hash_baseline.txt
+            echo "::set-output name=CHECK_RESULT::$(echo 'true')"
+            #echo "::set-output name=CREATE_BASELINE::$(echo 'true')"
+          fi
       
       # Force to fail if the results are not matched with the baseline
       #- name: Result of Baseline Check
