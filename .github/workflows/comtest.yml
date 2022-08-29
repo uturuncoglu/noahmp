@@ -48,7 +48,6 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
           spack -e ${{ github.workspace }}/.spack concretize -f
-          ${{ hashFiles(github.workspace/.spack/spack.lock) }}
           
       # restore build environment from cache
       - name: Restore Build Environment From Cache
