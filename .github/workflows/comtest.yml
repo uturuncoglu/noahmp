@@ -58,8 +58,7 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
           spack -e ${{ github.workspace }}/.spack concretize -f
-          find ~/.spack-ci/. -name "spack.lock"
-          ls ${{ github.workspace }}/.spack
+          md5sum ${{ github.workspace }}/.spack/spack.lock
           
           
       # create build environment
