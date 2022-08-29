@@ -58,7 +58,9 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
           spack -e ${{ github.workspace }}/.spack concretize -f
-          cat ~/.spack-ci/spack.lock
+          find ~/.spack-ci/. -name "spack.lock"
+          ls ${{ github.workspace }}/.spack
+          
           
       # create build environment
       - name: Install Spack Packages
