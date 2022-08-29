@@ -1,3 +1,5 @@
+[![comptest](https://github.com/uturuncoglu/noahmp/actions/workflows/comtest.yml/badge.svg)](https://github.com/uturuncoglu/noahmp/actions/workflows/comtest.yml)
+
 # noahmp
 Noah-MP Community Repository
 
