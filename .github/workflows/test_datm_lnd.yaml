@@ -48,18 +48,17 @@ jobs:
           spack --color always -e ${{ github.workspace }}/.spack concretize -f
       
       # restore build environment from cache
-      #- name: Restore Build Environment From Cache
-      #  id: cache-spack
-      #  uses: actions/cache@v3
-      #  with:
-      #    path: ~/.spack-ci
-      #    key: spack-${{ hashFiles('**/spack.lock') }}
-      #    restore-keys: |
-      #      spack-
+      - name: Restore Build Environment From Cache
+        id: cache-spack
+        uses: actions/cache@v3
+        with:
+          path: /home/runner/work/noahmp/.spack-ci
+          key: ${{ matrix.os }}-spack-${{ hashFiles('**/spack.lock') }}
+          restore-keys: |
+            ${{ matrix.os }}-spack
           
-      # create build environment
-      #- name: Install Spack Packages
-      #  if: steps.cache-spack.outputs.cache-hit != 'true'
-      #  run: |
-      #    . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
-      #    spack -e ${{ github.workspace }}/.spack install -j3
+      # install build environment
+      - name: Install Spack Packages
+        run: |
+          . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
+          spack --color always -e ${{ github.workspace }}/.spack install -j3
