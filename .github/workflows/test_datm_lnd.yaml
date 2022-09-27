@@ -18,6 +18,12 @@ jobs:
       INSTALL_DIR: $HOME/install
 
     steps:
+      # checkout base repository
+      - name: Checkout NoahMP Repository
+        uses: actions/checkout@v3
+        with:
+          ref: feature/nuopc_cap_new
+          
       # prepare core environment
       - name: Install Core Development Tools
         run: |
