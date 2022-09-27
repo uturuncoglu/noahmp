@@ -68,9 +68,10 @@ jobs:
       # TODO: update fms in spack.yaml as fms~openmp to build it without openmp support 
       - name: Build and Install NoahMP
         run: |
-          ls -al /home/runner/work/noahmp/noahmp/.spack-ci/view/bin
           ls -al ${{ github.workspace }}
           ls -al $GITHUB_WORKSPACE
+          ls -al ${{ github.workspace }}/../
+          ls -al $GITHUB_WORKSPACE/../          
           #export PATH=${{ github.workspace }}/.spack-ci/view/bin:$PATH
           #export ESMFMKFILE=${{ github.workspace }}/.spack-ci/view/lib/esmf.mk
           #export NetCDF_ROOT=`nc-config --prefix`
