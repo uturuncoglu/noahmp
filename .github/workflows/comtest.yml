@@ -1,15 +1,16 @@
 name: comptest
 
 on:
-  push:
-    branches: [ feature/nuopc_cap_new ]
-  pull_request:
-    branches: [ feature/nuopc_cap_new ]
+  workflow_dispatch:
+  #push:
+  #  branches: [ feature/nuopc_cap_new ]
+  #pull_request:
+  #  branches: [ feature/nuopc_cap_new ]
   # following is required to prevent auto-removing cache entries after 7-days
   # this only works on default branch
-  schedule:
-    - cron: '0 0 * * MON'
-    - cron: '0 0 * * FRI'
+  #schedule:
+  #  - cron: '0 0 * * MON'
+  #  - cron: '0 0 * * FRI'
 
 jobs:
   create_environment:
