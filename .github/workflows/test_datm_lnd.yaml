@@ -92,6 +92,7 @@ jobs:
         run: |
           export PATH=${{ github.workspace }}/../.spack-ci/view/bin:$PATH
           export ESMFMKFILE=${{ github.workspace }}/../.spack-ci/view/lib/esmf.mk
+          export FC=gfortran
           cd ${{ github.workspace }}/cdeps
           mkdir build
           cd build
