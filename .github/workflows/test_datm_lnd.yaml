@@ -1,4 +1,4 @@
-name: datm_noahmp
+name: test_datm_lnd
 
 on:
   workflow_dispatch:
