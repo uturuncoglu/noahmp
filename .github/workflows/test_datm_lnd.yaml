@@ -15,7 +15,7 @@ jobs:
     
     env:
       # installation location for spack and other components
-      INSTALL_DIR: $HOME/install
+      INSTALL_DIR: ${{ github.workspace }}/install
 
     steps:
       # checkout base repository
@@ -62,3 +62,19 @@ jobs:
         run: |
           . $GITHUB_WORKSPACE/spack/share/spack/setup-env.sh
           spack --color always -e ${{ github.workspace }}/.spack install -j3
+
+      # build and install component
+      # need to install with openmp support since fms build with it
+      # TODO: update fms in spack.yaml as fms~openmp to build it without openmp support 
+      - name: Build and Install NoahMP
+        run: |
+          export PATH=${{ github.workspace }}/.spack-ci/view/bin:$PATH
+          export ESMFMKFILE=${{ github.workspace }}/.spack-ci/view/lib/esmf.mk
+          export NetCDF_ROOT=`nc-config --prefix`
+          export FC=gfortran
+          cd ${{ github.workspace }}
+          mkdir build
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DOPENMP=ON ../
+          make
+          make install
