@@ -101,7 +101,7 @@ jobs:
             -DPIO_C_INCLUDE_DIR=${{ github.workspace }}/../.spack-ci/view/include \
             -DPIO_Fortran_LIBRARY=${{ github.workspace }}/../.spack-ci/view/lib \
             -DPIO_Fortran_INCLUDE_DIR=${{ github.workspace }}/../.spack-ci/view/include \
-            -DCMAKE_Fortran_FLAGS="-ffree-line-length-none -ffixed-line-length-none" \
+            -DCMAKE_Fortran_FLAGS="-ffree-line-length-none -ffixed-line-length-none -fallow-invalid-boz" \
             -DDISABLE_FoX=ON ../
           make
           make install
