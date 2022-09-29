@@ -79,7 +79,6 @@ jobs:
           cmake -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DOPENMP=ON ../
           make
           make install
-          cat ${{ env.INSTALL_DIR }}/lib/cmake/noahmp-esmx.cmake
 
       # checkout data models
       - name: Checkout CDEPS
@@ -107,3 +106,20 @@ jobs:
             -DDISABLE_FoX=ON ../
           make
           make install
+
+      # use ESMX generic driver and create executable
+      - name: Use ESMX to create executable
+        run: |
+          mkdir {{ github.workspace }}/app
+          cd {{ github.workspace }}/app
+          # create ESMX build file
+          echo "components:" >> esmxBuild.yaml
+          echo "  datm:" >> esmxBuild.yaml
+          echo "    cmake_config: ${{ env.INSTALL_DIR }}/lib/cmake/datm-esmx.cmake" >> esmxBuild.yaml 
+          echo "    fort_module: cdeps_datm_comp" >> esmxBuild.yaml
+          echo "  noahmp:" >> esmxBuild.yaml
+          echo "    cmake_config: ${{ env.INSTALL_DIR }}/lib/cmake/noahmp-esmx.cmake" >> esmxBuild.yaml
+          echo "    fort_module: lnd_comp_nuopc" >> esmxBuild.yaml
+          cat esmxBuild.yaml 
+          export ESMF_ESMXDIR=${{ github.workspace }}/../.spack-ci/view/include/ESMX
+          cmake -H$ESMF_ESMXDIR -Bbuild
