@@ -78,6 +78,7 @@ jobs:
           cmake -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} -DOPENMP=ON ../
           make
           make install
+          cat ${{ env.INSTALL_DIR }}/lib/cmake/noahmp-esmx.cmake
 
       # checkout data models
       - name: Checkout CDEPS
