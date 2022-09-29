@@ -123,3 +123,6 @@ jobs:
           cat esmxBuild.yaml 
           export ESMF_ESMXDIR=${{ github.workspace }}/../.spack-ci/view/include/ESMX
           cmake -H$ESMF_ESMXDIR -Bbuild
+          cd ${{ github.workspace }}/app/build
+          make
+          ls -al
