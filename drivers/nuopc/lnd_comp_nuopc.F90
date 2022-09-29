@@ -24,6 +24,7 @@ module lnd_comp_nuopc
   use NUOPC            , only : NUOPC_CompSpecialize
   use NUOPC_Model      , only : NUOPC_ModelGet
   use NUOPC_Model      , only : model_routine_SS => SetServices
+  use NUOPC_Model      , only : SetVM
   use NUOPC_Model      , only : model_label_Advance => label_Advance
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
 
@@ -37,13 +38,13 @@ module lnd_comp_nuopc
   use lnd_comp_domain  , only : lnd_set_decomp_and_domain_from_mosaic
   use lnd_comp_import_export, only : advertise_fields, realize_fields
   use lnd_comp_import_export, only : import_fields, export_fields, state_diagnose
-  use lnd_comp_driver  , only : drv_init, drv_run, drv_finalize
+  use lnd_comp_driver  , only : drv_init, drv_run
 
   implicit none
   private ! except
 
   ! Module public routines
-  public  :: SetServices
+  public  :: SetServices, SetVM
 
   ! Module private routines
   private :: InitializeP0        ! Phase zero of initialization
@@ -335,6 +336,21 @@ contains
     end if
 
     write(msg, fmt='(A,L)') trim(subname)//': has_export = ', noahmp%nmlist%has_export
+    call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
+
+    ! ---------------------
+    ! Option to calculate net shortwave internally using downwelling component and albedo
+    ! ---------------------
+
+    call NUOPC_CompAttributeGet(gcomp, name='calc_snet', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    noahmp%nmlist%calc_snet = .false.
+    if (isPresent .and. isSet) then
+       if (trim(cvalue) .eq. '.true.' .or. trim(cvalue) .eq. 'true') noahmp%nmlist%calc_snet = .true.
+    end if
+
+    write(msg, fmt='(A,L)') trim(subname)//': calc_snet = ', noahmp%nmlist%calc_snet
     call ESMF_LogWrite(trim(msg), ESMF_LOGMSG_INFO)
 
     ! ---------------------
