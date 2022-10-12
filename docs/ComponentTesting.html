@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>3. Building, Running and Testing Land Model Outside of UFS Weather Model &#8212; NoahMP Land Model Users Guide  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="2. Building and Running the UFS Weather Model Land Configurations" href="BuildingAndRunning.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="BuildingAndRunning.html" title="2. Building and Running the UFS Weather Model Land Configurations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">NoahMP Land Model Users Guide  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3. </span>Building, Running and Testing Land Model Outside of UFS Weather Model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="building-running-and-testing-land-model-outside-of-ufs-weather-model">
+<span id="componenttesting"></span><h1><span class="section-number">3. </span>Building, Running and Testing Land Model Outside of UFS Weather Model<a class="headerlink" href="#building-running-and-testing-land-model-outside-of-ufs-weather-model" title="Permalink to this headline">¶</a></h1>
+<section id="creating-working-environment">
+<h2><span class="section-number">3.1. </span>Creating working environment<a class="headerlink" href="#creating-working-environment" title="Permalink to this headline">¶</a></h2>
+<p>This section mainly aims to give brief information about creating work environment to test, build, run and develop NoahMP land component outside of the UFS Weather Model. For this purpose, <a class="reference external" href="https://www.docker.com">Docker</a> container can be used.</p>
+<p>To create Docker container that will be the foundation of development and testing environment:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">docker run -it ubuntu:latest</span>
+
+<span class="go">apt-get update</span>
+<span class="go">apt-get -y install unzip file gringo</span>
+<span class="go">apt-get -y install build-essential binutils-dev gfortran</span>
+<span class="go">apt-get -y install python3-dev python3-yaml</span>
+<span class="go">apt-get -y install cmake wget ca-certificates vim git</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using container to create test and development environment is optional. The following steps can be used also in other platforms or/and OS in case of lack of depencenies in there.</p>
+</div>
+<p>Then, <a class="reference external" href="https://spack.io">spack</a> package manager can be used to install dependencies such as ESMF, FMS. In this case, the content of the <cite>spack.yaml</cite> can be structured as following. Also note that the installadtion directory can be changed through the <cite>config</cite> section of the YAML file.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">spack</span><span class="p">:</span>
+  <span class="nt">concretizer</span><span class="p">:</span>
+    <span class="nt">unify</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">true</span>
+  <span class="nt">specs</span><span class="p">:</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">fms</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">esmf@8.4.0b15+parallelio~xerces</span>
+  <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">parallelio@2.5.8+pnetcdf~shared</span>
+  <span class="nt">view</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">/root/.spack-ci/view</span>
+  <span class="nt">config</span><span class="p">:</span>
+    <span class="nt">source_cache</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">~/.spack-ci/source_cache</span>
+    <span class="nt">misc_cache</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">~/.spack-ci/misc_cache</span>
+    <span class="nt">test_cache</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">~/.spack-ci/test_cache</span>
+    <span class="nt">install_tree</span><span class="p">:</span>
+      <span class="nt">root</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">~/.spack-ci/opt</span>
+</pre></div>
+</div>
+<p>To install dependencies:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir $HOME/test</span>
+<span class="go">cd $HOMEtest</span>
+
+<span class="go">git clone https://github.com/NOAA-EMC/spack.git</span>
+<span class="go">. spack/share/spack/setup-env.sh</span>
+<span class="go">spack -e . concretize -f</span>
+<span class="go">spack -e . install -j3</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In this case, the <cite>spack.yaml</cite> is assumed in the test/ directory. In case of having it an other directory, user just need to point the directory after <cite>-e</cite> option (it is set to <cite>.</cite> in this example).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If there is a message like “Fetch anyway?”, then just hit “Y”.</p>
+</div>
+</section>
+<section id="building-data-atmosphere-forced-noahmp-configuration">
+<h2><span class="section-number">3.2. </span>Building Data Atmosphere Forced NoahMP Configuration<a class="headerlink" href="#building-data-atmosphere-forced-noahmp-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Once the working environment is ready, the components of the simple configuration (<cite>datm+lnd</cite>) can be build. In this case, first model components are need to be be build individually.</p>
+<p><strong>NoahMP</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PATH=$HOME/.spack-ci/view/bin:$PATH</span>
+<span class="go">export ESMFMKFILE=$HOME/.spack-ci/view/lib/esmf.mk</span>
+<span class="go">export NetCDF_ROOT=`nc-config --prefix`</span>
+<span class="go">export FC=gfortran</span>
+<span class="go">cd $HOME/test</span>
+<span class="go">git clone https://github.com/NOAA-EMC/noahmp</span>
+<span class="go">cd  noahmp</span>
+<span class="go">mkdir build</span>
+<span class="go">cd build</span>
+<span class="go">cmake -DCMAKE_INSTALL_PREFIX=../install -DOPENMP=ON ../</span>
+<span class="go">make</span>
+<span class="go">make install</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This will install component specific files (<cite>libnoahmp.a</cite> and <cite>*.cmake</cite>) under installation directory.</p>
+</div>
+<p><strong>CDEPS</strong></p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PATH=$HOME/.spack-ci/view/bin:$PATH</span>
+<span class="go">export ESMFMKFILE=$HOME/.spack-ci/view/lib/esmf.mk</span>
+<span class="go">export FC=gfortran</span>
+<span class="go">cd $HOME/test</span>
+<span class="go">git clone -b hotfix/std_build https://github.com/uturuncoglu/CDEPS.git cdeps</span>
+<span class="go">cd cdeps</span>
+<span class="go">mkdir build</span>
+<span class="go">cd build</span>
+<span class="go">cmake -DCMAKE_INSTALL_PREFIX=../ \</span>
+<span class="go">  -DPIO_C_LIBRARY=$HOME/.spack-ci/view/lib \</span>
+<span class="go">  -DPIO_C_INCLUDE_DIR=$HOME/.spack-ci/view/include \</span>
+<span class="go">  -DPIO_Fortran_LIBRARY=$HOME/.spack-ci/view/lib \</span>
+<span class="go">  -DPIO_Fortran_INCLUDE_DIR=$HOME/.spack-ci/view/include \</span>
+<span class="go">  -DCMAKE_Fortran_FLAGS=&quot;-ffree-line-length-none -fallow-argument-mismatch -fallow-invalid-boz&quot; \</span>
+<span class="go">  -DDISABLE_FoX=ON ../</span>
+<span class="go">make</span>
+<span class="go">make install</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Again, this will install component specific files under installation directory.</p>
+</div>
+<p>Then, component libraries can be used to create executable through the use of <a class="reference external" href="https://github.com/esmf-org/esmf/tree/develop/src/addon/ESMX">ESMX (Earth System Model eXecutable)</a> layer provided by <a class="reference external" href="http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/">ESMF</a>.</p>
+<p>This requires creating a simple YAML file (<cite>esmxBuild.yaml</cite>) that points component specific files with following content:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">components</span><span class="p">:</span>
+  <span class="nt">datm</span><span class="p">:</span>
+    <span class="nt">cmake_config</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$HOME/test/cdeps/install/lib/cmake/datm-esmx.cmake</span>
+    <span class="nt">fort_module</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">cdeps_datm_comp</span>
+  <span class="nt">noahmp</span><span class="p">:</span>
+    <span class="nt">cmake_config</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">$HOME/test/noahmp/lib/cmake/noahmp-esmx.cmake</span>
+    <span class="nt">fort_module</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">lnd_comp_nuopc</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>File <cite>esmxBuild.yaml</cite> needs to be placed in the $HOME/test/app directory.</p>
+</div>
+<p>The application can be build with following commands:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PATH=$HOME/.spack-ci/view/bin:$PATH</span>
+<span class="go">export ESMFMKFILE=$HOME/.spack-ci/view/lib/esmf.mk</span>
+<span class="go">export ESMF_ESMXDIR=$HOME/.spack-ci/view/include/ESMX</span>
+<span class="go">cd $HOME/test</span>
+<span class="go">mkdir app</span>
+<span class="go">cd app</span>
+<span class="go">cmake -H$ESMF_ESMXDIR -Bbuild</span>
+<span class="go">cd build</span>
+<span class="go">make</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This will create <cite>esmx</cite> executable under build/ directory.</p>
+</div>
+</section>
+<section id="running-data-atmosphere-forced-noahmp-configuration">
+<h2><span class="section-number">3.3. </span>Running Data Atmosphere Forced NoahMP Configuration<a class="headerlink" href="#running-data-atmosphere-forced-noahmp-configuration" title="Permalink to this headline">¶</a></h2>
+<p>To run <cite>esmx</cite> executable, the run directory, which includes input files for both CDEPS and NoahMP components, is required. The more information about running UFS Weather Model datm+lnd configuration can be found in <a class="reference internal" href="BuildingAndRunning.html#buildingandrunning"><span class="std std-ref">Building and Running the UFS Weather Model Land Configurations</span></a>.</p>
+</section>
+<section id="automated-component-testing">
+<h2><span class="section-number">3.4. </span>Automated Component Testing<a class="headerlink" href="#automated-component-testing" title="Permalink to this headline">¶</a></h2>
+<p>The NoahMP model uses GitHub Actions (GHA), a GitHub-hosted continuous integration service, to perform CI/CD testing. The GHA is triggered in following cases,</p>
+<ol class="arabic simple">
+<li><p>When a developer makes a pull request (PR) to the NoahMP repository</p></li>
+<li><p>When a developer makes a direct push to default branch (i.e. develop)</p></li>
+<li><p>Twice a week on Monday and Friday (This is required to prevent auto-removing cache entries after 7-days)</p></li>
+<li><p>Repository admin could also trigger GHA manually</p></li>
+</ol>
+<p>The GHA-related <code class="docutils literal notranslate"><span class="pre">yaml</span></code> script is located in the <code class="docutils literal notranslate"><span class="pre">.github/workflows/</span></code> directory. <code class="docutils literal notranslate"><span class="pre">datm_noahmp.yaml</span></code> is the main workflow file that aim to run <cite>datm+lnd</cite> configuration.</p>
+<ul class="simple">
+<li><p><cite>.github/workflows/tests/</cite> directory includes YAML files that will be used to create required configuration files for CDEPS and NoahMP and retrive required input files.</p></li>
+<li><p><cite>.github/workflows/data/</cite> directory includes additional the input files that are not found on the web to retrive.</p></li>
+<li><p><cite>.github/workflows/scripts/</cite> directory includes Python scripts that reads the information from YAML files to create configuration files and retrieve required input files.</p></li>
+<li><p><cite>.github/workflows/spack/</cite> directory includes <cite>spack.yaml</cite> file that is used to insatll dependencies through the use of <a class="reference external" href="https://spack.io">spack</a> package manager.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Building, Running and Testing Land Model Outside of UFS Weather Model</a><ul>
+<li><a class="reference internal" href="#creating-working-environment">3.1. Creating working environment</a></li>
+<li><a class="reference internal" href="#building-data-atmosphere-forced-noahmp-configuration">3.2. Building Data Atmosphere Forced NoahMP Configuration</a></li>
+<li><a class="reference internal" href="#running-data-atmosphere-forced-noahmp-configuration">3.3. Running Data Atmosphere Forced NoahMP Configuration</a></li>
+<li><a class="reference internal" href="#automated-component-testing">3.4. Automated Component Testing</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="BuildingAndRunning.html"
+                        title="previous chapter"><span class="section-number">2. </span>Building and Running the UFS Weather Model Land Configurations</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ComponentTesting.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="BuildingAndRunning.html" title="2. Building and Running the UFS Weather Model Land Configurations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">NoahMP Land Model Users Guide  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3. </span>Building, Running and Testing Land Model Outside of UFS Weather Model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+    </div>
+  </body>
+</html>

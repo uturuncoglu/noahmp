@@ -50,8 +50,8 @@
 <h2><span class="section-number">1.1. </span>Supported Drivers<a class="headerlink" href="#supported-drivers" title="Permalink to this headline">¶</a></h2>
 <p>The driver and coupling layer is found under <strong>drivers/</strong> directory.</p>
 <p>Within the <strong>drivers/nuopc/</strong> directory, the following files are found,</p>
-<table class="colwidths-given docutils align-default" id="id1">
-<caption><span class="caption-number">Table 1.1 </span><span class="caption-text">List of files under <strong>drivers/nuopc/</strong> directory</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given docutils align-default" id="id3">
+<caption><span class="caption-number">Table 1.1 </span><span class="caption-text">List of files under <strong>drivers/nuopc/</strong> directory</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 33%" />
 <col style="width: 67%" />
@@ -63,19 +63,19 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>lnd_comp_domain.F90</p></td>
-<td><p>Subroutines that are used to create ESMF Grid/Mesh using mosaic or ESMF Mesh files</p></td>
+<td><p>Includes subroutines/functions that are used to create ESMF Grid/Mesh using mosaic or ESMF Mesh files</p></td>
 </tr>
 <tr class="row-odd"><td><p>lnd_comp_driver.F90</p></td>
-<td><p>Subroutines (init, run and finalize) that are used to drive the NoahMP land model</p></td>
+<td><p>Includes subroutines (init, run and finalize) that are used to drive the NoahMP land model</p></td>
 </tr>
 <tr class="row-even"><td><p>lnd_comp_import_export.F90</p></td>
-<td><p>Subroutines to define import and export states as well as diagnostic code to check the fields in states</p></td>
+<td><p>Includes subroutines to define import and export states as well as diagnostic code to check the fields in states</p></td>
 </tr>
 <tr class="row-odd"><td><p>lnd_comp_io.F90</p></td>
-<td><p>Subroutines to read in static information and initial conditions from tiled files and writing model output in tiled format</p></td>
+<td><p>Includes subroutines to read in static information and initial conditions from tiled files and writing model output in tiled format. The I/O routines currently using <cite>FMS &lt;https://github.com/NOAA-GFDL/FMS&gt;</cite> library to access multi-tile files but this will be replaced with ESMF calls in the near future and FMS dependency from NUOPC “cap” will be removed.</p></td>
 </tr>
 <tr class="row-even"><td><p>lnd_comp_kind.F90</p></td>
-<td><p>Parameters that define used kind types</p></td>
+<td><p>Stores parameters that define used kind types etc.</p></td>
 </tr>
 <tr class="row-odd"><td><p>lnd_comp_nuopc.F90</p></td>
 <td><p>Top level file that defines NUOPC cap for NoahMP Land Model</p></td>
@@ -92,8 +92,8 @@
 <section id="noahmp-land-model-specific-esmf-configuration-options">
 <h2><span class="section-number">1.2. </span>NoahMP Land Model Specific ESMF Configuration Options<a class="headerlink" href="#noahmp-land-model-specific-esmf-configuration-options" title="Permalink to this headline">¶</a></h2>
 <p>The NUOPC “cap” uses set of namelist options provided as ESMF Config file format to define domain and configure the NoahMP Land Model. The list of relevant namelist options, which needs to be defined under <cite>LND_attributes::</cite> group can be seen in the following table.</p>
-<table class="colwidths-given docutils align-default" id="id2">
-<caption><span class="caption-number">Table 1.2 </span><span class="caption-text">Namelist options for NoahMP Land Model</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given docutils align-default" id="id4">
+<caption><span class="caption-number">Table 1.2 </span><span class="caption-text">Namelist options for NoahMP Land Model</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 33%" />
 <col style="width: 67%" />
@@ -105,16 +105,16 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>mosaic_file</p></td>
-<td><p>The path and name of the mosaic grid file (i.e. INPUT/C96_mosaic.nc)</p></td>
+<td><p>The path and name of the mosaic grid file (i.e. INPUT/C96_mosaic.nc) in Grid Spec format</p></td>
 </tr>
 <tr class="row-odd"><td><p>input_dir</p></td>
-<td><p>The directory that stores initial conditions, static information and grid related files</p></td>
+<td><p>The directory that stores initial conditions, static information and grid related files that are pointed by mosaic file</p></td>
 </tr>
 <tr class="row-even"><td><p>ic_type</p></td>
 <td><p>Indicates the source of the initial conditions. Two options are supported ‘custom’ (i.e. C96.initial.tile[1-6].nc) and ‘sfc’ (default, sfc_data.tile[1-6].nc).</p></td>
 </tr>
 <tr class="row-odd"><td><p>layout</p></td>
-<td><p>Defines decompositions in each direction on each tile (i.e. 3:8 for C96). This needs to be consistent with resolution.</p></td>
+<td><p>Defines decompositions in each direction on each tile (i.e. 3:8 for C96). This needs to be consistent with resolution. If this is missing, then the NUOPC “cap” tries to calculate the tiles using FMS’s <cite>mpp_define_layout()</cite> call.</p></td>
 </tr>
 <tr class="row-even"><td><p>num_soil_levels</p></td>
 <td><p>Number of soil levels used by NoahMP Land Model (i.e. 4)</p></td>
@@ -122,56 +122,74 @@
 <tr class="row-odd"><td><p>forcing_height</p></td>
 <td><p>Height of the atmospheric forcing in meters (i.e. 10)</p></td>
 </tr>
-<tr class="row-even"><td><p>soil_level_thickness</p></td>
+<tr class="row-even"><td><p>soil_level_thickness (Note: soil thickness are hard-coded in the NoahMP at this point)</p></td>
 <td><p>Thickness of the soil levels (i.e. 0.10:0.30:0.60:1.00). The number of soil level thickness needs to be consistent with <cite>num_soil_levels</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>soil_level_nodes</p></td>
 <td><p>Depths of the node points for each soil level (i.e. 0.05:0.25:0.70:1.50). The number of node points needs to be consistent with <cite>num_soil_levels</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p>dynamic_vegetation_option</p></td>
+<tr class="row-even"><td><p>dynamic_vegetation_option (idveg)</p></td>
 <td><p>Options for dynamic vegetation (i.e. 4)</p></td>
 </tr>
-<tr class="row-odd"><td><p>canopy_stomatal_resistance_option</p></td>
+<tr class="row-odd"><td><p>canopy_stomatal_resistance_option (iopt_crs)</p></td>
 <td><p>Canopy stomatal resistance (1-&gt;ball-berry; 2-&gt;jarvis)</p></td>
 </tr>
-<tr class="row-even"><td><p>soil_wetness_option</p></td>
+<tr class="row-even"><td><p>soil_wetness_option (iopt_btr)</p></td>
 <td><p>Options for soil moisture factor for stomatal resistance (1-&gt;noah; 2-&gt;clm; 3-&gt;ssib)</p></td>
 </tr>
-<tr class="row-odd"><td><p>runoff_option</p></td>
+<tr class="row-odd"><td><p>runoff_option (iopt_run)</p></td>
 <td><p>Options for runoff and groundwater (1-&gt;simgm; 2-&gt;simtop; 3-&gt;schaake96; 4-&gt;bats)</p></td>
 </tr>
-<tr class="row-even"><td><p>surface_exchange_option</p></td>
+<tr class="row-even"><td><p>surface_exchange_option (iopt_sfc)</p></td>
 <td><p>Options for surface layer drag coeff (ch and cm) (1-&gt;m-o; 2-&gt;chen97)</p></td>
 </tr>
-<tr class="row-odd"><td><p>supercooled_soilwater_option</p></td>
+<tr class="row-odd"><td><p>supercooled_soilwater_option (iopt_frz)</p></td>
 <td><p>Options for supercooled liquid water (1-&gt; ny06; 2-&gt;koren99)</p></td>
 </tr>
-<tr class="row-even"><td><p>frozen_soil_adjust_option</p></td>
+<tr class="row-even"><td><p>frozen_soil_adjust_option (iopt_inf)</p></td>
 <td><p>Options for frozen soil permeability (1-&gt; ny06; 2-&gt;koren99)</p></td>
 </tr>
-<tr class="row-odd"><td><p>radiative_transfer_option</p></td>
+<tr class="row-odd"><td><p>radiative_transfer_option (iopt_rad)</p></td>
 <td><p>Options for radiation transfer (1-&gt;gap=f(3d,cosz); 2-&gt;gap=0; 3-&gt;gap=1-fveg)</p></td>
 </tr>
-<tr class="row-even"><td><p>snow_albedo_option</p></td>
+<tr class="row-even"><td><p>snow_albedo_option (iopt_alb)</p></td>
 <td><p>Options for snow surface albedo (1-&gt;bats; 2-&gt;class)</p></td>
 </tr>
-<tr class="row-odd"><td><p>precip_partition_option</p></td>
+<tr class="row-odd"><td><p>precip_partition_option (iopt_snf)</p></td>
 <td><p>Options for rainfall &amp; snowfall (1-jordan91; 2-&gt;bats; 3-&gt;noah)</p></td>
 </tr>
-<tr class="row-even"><td><p>soil_temp_lower_bdy_option</p></td>
+<tr class="row-even"><td><p>soil_temp_lower_bdy_option (iopt_tbot)</p></td>
 <td><p>Options for lower boundary of soil temperature (1-&gt;zero-flux; 2-&gt;noah)</p></td>
 </tr>
-<tr class="row-odd"><td><p>soil_temp_time_scheme_option</p></td>
+<tr class="row-odd"><td><p>soil_temp_time_scheme_option (iopt_stc)</p></td>
 <td><p>Options for snow/soil temperature time scheme (only layer 1, 1-&gt;semi-implicit; 2-&gt;full implicit/original noah)</p></td>
 </tr>
-<tr class="row-even"><td><p>surface_evap_resistance_option</p></td>
+<tr class="row-even"><td><p>surface_evap_resistance_option (iopt_rsf, Note: this is not used currently and fixed to 4 in <cite>noahmpdrv.F90</cite>)</p></td>
 <td><p>Options for surface resistance (1-&gt;sakaguchi/zeng; 2-&gt;seller; 3-&gt;mod sellers; 4-&gt;1+snow)</p></td>
 </tr>
-<tr class="row-odd"><td><p>glacier_option</p></td>
+<tr class="row-odd"><td><p>glacier_option (iopt_gla, Note: this is not used currently and fixed to 2 in <cite>noahmpdrv.F90</cite>)</p></td>
 <td><p>Options for glacier treatment (1-&gt;phase change; 2-&gt;simple)</p></td>
 </tr>
 <tr class="row-even"><td><p>output_freq</p></td>
-<td><p>Options for output frequency in hours</p></td>
+<td><p>Options for output frequency in seconds (i.e. 21600 for 6-hourly output, 1 output every coupling time-step and can be used for debugging)</p></td>
+</tr>
+<tr class="row-odd"><td><p>do_mynnedmf</p></td>
+<td><p>Option for MYNN-EDMF (default value is <cite>.false.</cite>)</p></td>
+</tr>
+<tr class="row-even"><td><p>do_mynnsfclay</p></td>
+<td><p>Option for MYNN surface layer scheme (default value is <cite>.false.</cite>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>soil_type_category (isot)</p></td>
+<td><p>Option for soil type (0-&gt;Zobler - 9 category; 1-&gt;STATSGO - 19 category; 2-&gt;STAS-RUC - 19 category)</p></td>
+</tr>
+<tr class="row-even"><td><p>veg_type_category (ivegsrc)</p></td>
+<td><p>Option for source of vegetation data (0-&gt;USGS; 1-&gt;IGBP; 2-&gt;UMD; 3-&gt;NLCD40; 4-&gt;USGS-RUC; 5-&gt;MODI-RUC)</p></td>
+</tr>
+<tr class="row-odd"><td><p>initial_emiss</p></td>
+<td><p>Option for initial surface lw emissivity in fraction (default value is 0.95)</p></td>
+</tr>
+<tr class="row-even"><td><p>initial_albedo</p></td>
+<td><p>Option for initial mean surface albedo (value is default 0.2)</p></td>
 </tr>
 </tbody>
 </table>
@@ -188,7 +206,7 @@
 </section>
 <section id="initialization">
 <h3><span class="section-number">1.3.2. </span>Initialization<a class="headerlink" href="#initialization" title="Permalink to this headline">¶</a></h3>
-<p>During the <cite>InitializeAdvertise</cite> phase, call is made to <cite>fms_init()</cite> to use <a class="reference external" href="https://www.gfdl.noaa.gov/fms/">Flexible Modeling System (FMS)</a> for reading and writing cubed-sphere tiled output. In this case, The MPI communicator is pulled in through the ESMF VM object and used by FMS. This phase also calls <cite>advertise_fields()</cite> to setup import and export states.</p>
+<p>During the <cite>InitializeAdvertise</cite> phase, call is made to <cite>fms_init()</cite> to use <a class="reference external" href="https://www.gfdl.noaa.gov/fms/">Flexible Modeling System (FMS)</a> for reading and writing cubed-sphere tiled output. In this case, The MPI communicator is pulled in through the ESMF VM object and used by FMS. This phase also calls <cite>advertise_fields()</cite> to setup import and export states. The FMS initialization will be removed once the multi-tile I/O calls is supported by ESMF.</p>
 </section>
 <section id="run">
 <h3><span class="section-number">1.3.3. </span>Run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
@@ -204,8 +222,8 @@
 </section>
 <section id="model-fields-used-for-coupling">
 <h3><span class="section-number">1.3.5. </span>Model Fields Used for Coupling<a class="headerlink" href="#model-fields-used-for-coupling" title="Permalink to this headline">¶</a></h3>
-<table class="colwidths-given docutils align-default" id="id3">
-<caption><span class="caption-number">Table 1.3 </span><span class="caption-text">Import fields</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given docutils align-default" id="id5">
+<caption><span class="caption-number">Table 1.3 </span><span class="caption-text">Import fields</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 26%" />
 <col style="width: 11%" />
@@ -222,76 +240,166 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>inst_height_lowest</p></td>
+<tr class="row-even"><td><p>inst_height_lowest (<cite>Sa_z</cite>)</p></td>
 <td><p>m</p></td>
 <td><p>noahmp%forc%hgt</p></td>
 <td><p>bottom layer height</p></td>
-<td><p>namelist option <cite>forcing_height</cite></p></td>
+<td><p>namelist option <a href="#id1"><span class="problematic" id="id2">`</span></a>forcing_height</p></td>
 </tr>
-<tr class="row-odd"><td><p>inst_temp_height_lowest</p></td>
+<tr class="row-odd"><td><p>inst_temp_height_lowest (<cite>Sa_tbot</cite>)</p></td>
 <td><p>K</p></td>
 <td><p>noahmp%forc%t1</p></td>
 <td><p>bottom layer temperature</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>inst_pres_height_lowest</p></td>
+<tr class="row-even"><td><p>inst_temp_height_lowest_from_phys (<cite>Sa_ta</cite>)</p></td>
+<td><p>K</p></td>
+<td><p>noahmp%forc%t1</p></td>
+<td><p>bottom layer temperature</p></td>
+<td><p>used under UFS Weather Model, and active atmosphere</p></td>
+</tr>
+<tr class="row-odd"><td><p>inst_temp_height_surface (<cite>Sa_tskn</cite>)</p></td>
+<td><p>K</p></td>
+<td><p>noahmp%forc%tskin</p></td>
+<td><p>surface skin temperature</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>inst_pres_height_lowest (<cite>Sa_pbot</cite>)</p></td>
 <td><p>Pa</p></td>
-<td><p>noahmp%forc%ps</p></td>
+<td><p>noahmp%forc%pbot</p></td>
 <td><p>pressure at lowest model layer</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>inst_spec_humid_height_lowest</p></td>
+<tr class="row-odd"><td><p>inst_pres_height_lowest_from_phys (<cite>Sa_prsl</cite>)</p></td>
+<td><p>Pa</p></td>
+<td><p>noahmp%forc%pbot</p></td>
+<td><p>pressure at lowest model layer</p></td>
+<td><p>used under UFS Weather Model, and active atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p>inst_pres_height_surface (<cite>Sa_pslv</cite>)</p></td>
+<td><p>Pa</p></td>
+<td><p>noahmp%forc%ps</p></td>
+<td><p>surface pressure</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>inst_spec_humid_height_lowest (<cite>Sa_shum</cite>)</p></td>
 <td><p>kg kg-1</p></td>
 <td><p>noahmp%forc%q1</p></td>
 <td><p>bottom layer specific humidity</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>inst_zonal_wind_height_lowest</p></td>
+<tr class="row-even"><td><p>inst_spec_humid_height_lowest_from_phys (<cite>Sa_qa</cite>)</p></td>
+<td><p>kg kg-1</p></td>
+<td><p>noahmp%forc%q1</p></td>
+<td><p>bottom layer specific humidity</p></td>
+<td><p>used under UFS Weather Model, and active atmosphere</p></td>
+</tr>
+<tr class="row-odd"><td><p>inst_zonal_wind_height_lowest (<cite>Sa_u</cite>)</p></td>
 <td><p>m s-1</p></td>
 <td><p>noahmp%forc%u1</p></td>
 <td><p>bottom layer zonal wind</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>inst_merid_wind_height_lowest</p></td>
+<tr class="row-even"><td><p>inst_merid_wind_height_lowest (<cite>Sa_v</cite>)</p></td>
 <td><p>m s-1</p></td>
 <td><p>noahmp%forc%v1</p></td>
 <td><p>bottom layer meridional wind</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>mean_down_sw_flx</p></td>
+<tr class="row-odd"><td><p>inst_zonal_wind_height_lowest_from_phys (<cite>Sa_ua</cite>)</p></td>
+<td><p>m s-1</p></td>
+<td><p>noahmp%forc%u1</p></td>
+<td><p>bottom layer zonal wind</p></td>
+<td><p>used under UFS Weather Model, and active atmosphere</p></td>
+</tr>
+<tr class="row-even"><td><p>inst_merid_wind_height_lowest_from_phys (<cite>Sa_va</cite>)</p></td>
+<td><p>m s-1</p></td>
+<td><p>noahmp%forc%v1</p></td>
+<td><p>bottom layer meridional wind</p></td>
+<td><p>used under UFS Weather Model, and active atmosphere</p></td>
+</tr>
+<tr class="row-odd"><td><p>inst_exner_function_height_lowest (<cite>Sa_exner</cite>)</p></td>
+<td><p>1</p></td>
+<td><p>noahmp%forc%prslk1</p></td>
+<td><p>dimensionless exner function at surface adjacent layer</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>surface_friction_velocity (<cite>Sa_ustar</cite>)</p></td>
+<td><p>m s-1</p></td>
+<td><p>noahmp%forc%ustar1</p></td>
+<td><p>surface friction velocity</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>mean_down_sw_flx (<cite>Faxa_swdn</cite>)</p></td>
 <td><p>W m-2</p></td>
 <td><p>noahmp%forc%dswsfc</p></td>
 <td><p>mean downward SW heat flux</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p>mean_down_lw_flx</p></td>
+<tr class="row-even"><td><p>mean_down_lw_flx (<cite>Faxa_lwdn</cite>)</p></td>
 <td><p>W m-2</p></td>
 <td><p>noahmp%forc%dlwflx</p></td>
 <td><p>mean downward LW heat flux</p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p>Faxa_rainc</p></td>
+<tr class="row-odd"><td><p>mean_net_sw_flx (<cite>Faxa_swnet</cite>)</p></td>
+<td><p>W m-2</p></td>
+<td><p>noahmp%forc%dlwflx</p></td>
+<td><p>net SW radiation</p></td>
+<td><p>if it is not available, it will be calculated by using <cite>mean_down_sw_flx</cite> and surface albedo</p></td>
+</tr>
+<tr class="row-even"><td><p>mean_prec_rate_conv (<cite>Faxa_rainc</cite>)</p></td>
 <td><p>kg m-2 s-1</p></td>
 <td><p>noahmp%forc%tprcpc</p></td>
 <td><p>convective precipitation</p></td>
-<td><p>provided when coupled with CDEPS data atmosphere</p></td>
+<td><p>provided when coupled with data atmosphere</p></td>
 </tr>
 <tr class="row-odd"><td><p>Faxa_rainl</p></td>
 <td><p>kg m-2 s-1</p></td>
 <td><p>noahmp%forc%tprcpl</p></td>
 <td><p>large-scale precipitation</p></td>
-<td><p>provided when coupled with CDEPS data atmosphere</p></td>
+<td><p>provided when coupled with data atmosphere</p></td>
 </tr>
-<tr class="row-even"><td><p>mean_prec_rate</p></td>
+<tr class="row-even"><td><p>mean_prec_rate (<cite>Faxa_rain</cite>)</p></td>
 <td><p>kg m-2 s-1</p></td>
 <td><p>noahmp%forc%tprcp</p></td>
 <td><p>total precipitation</p></td>
-<td><p>total precipitation can be calculated by its components (tprcpc and tprcpl)</p></td>
+<td><p>total precipitation can be calculated by its components (tprcpc and tprcpl) or provided by directly from active atmosphere</p></td>
+</tr>
+<tr class="row-odd"><td><p>Faxa_snowc</p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>noahmp%forc%snowc</p></td>
+<td><p>convective part of snow precipitation</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Faxa_snowl</p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>noahmp%forc%snowl</p></td>
+<td><p>large-scale part of snow precipitation</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>mean_fprec_rate (<cite>Faxa_snow</cite>)</p></td>
+<td><p>kg m-2 s-1</p></td>
+<td><p>noahmp%forc%snow</p></td>
+<td><p>total snow precipitation</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>vfrac</p></td>
+<td><p>1</p></td>
+<td><p>noahmp%forc%vegfrac</p></td>
+<td><p>areal fractional cover of green vegetation</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>zorl</p></td>
+<td><p>cm</p></td>
+<td><p>noahmp%forc%zorl</p></td>
+<td><p>surface roughness</p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
-<table class="colwidths-given docutils align-default" id="id4">
-<caption><span class="caption-number">Table 1.4 </span><span class="caption-text">Export fields</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<table class="colwidths-given docutils align-default" id="id6">
+<caption><span class="caption-number">Table 1.4 </span><span class="caption-text">Export fields</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 26%" />
 <col style="width: 11%" />

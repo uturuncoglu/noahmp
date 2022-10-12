@@ -18,6 +18,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="3. Building, Running and Testing Land Model Outside of UFS Weather Model" href="ComponentTesting.html" />
     <link rel="prev" title="1. Driver and Coupling" href="DriverAndCoupling.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -26,6 +27,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ComponentTesting.html" title="3. Building, Running and Testing Land Model Outside of UFS Weather Model"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="DriverAndCoupling.html" title="1. Driver and Coupling"
              accesskey="P">previous</a> |</li>
@@ -44,42 +48,50 @@
 <section id="downloading-the-weather-model-code">
 <h2><span class="section-number">2.1. </span>Downloading the Weather Model Code<a class="headerlink" href="#downloading-the-weather-model-code" title="Permalink to this headline">¶</a></h2>
 <p>To clone the ufs-weather-model repository that is capable to run land as a seperate component, execute the following commands:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">git clone -b feature/lnd_noahmp --recursive https://github.com/uturuncoglu/ufs-weather-model.git ufs-weather-model</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">git clone --recursive https://github.com/ufs-community/ufs-weather-model.git</span>
 </pre></div>
 </div>
 </section>
 <section id="building-the-weather-model">
 <h2><span class="section-number">2.2. </span>Building the Weather Model<a class="headerlink" href="#building-the-weather-model" title="Permalink to this headline">¶</a></h2>
-<p>The UFS Weather Model uses the CMake build system. The build system is updated to include new land model related applications: LND and LND-ALL.</p>
+<p>The UFS Weather Model uses the CMake build system. The build system is updated to include new land model related applications: <cite>LND</cite>, <cite>ATML</cite> and <cite>S2SWAL</cite>.</p>
 <table class="colwidths-given docutils align-default" id="id1">
-<caption><span class="caption-number">Table 2.1 </span><span class="caption-text">List of regression tests</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<caption><span class="caption-number">Table 2.1 </span><span class="caption-text">List of applications that supports external alnd component</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 67%" />
+<col style="width: 20%" />
+<col style="width: 40%" />
+<col style="width: 40%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Application Name</p></th>
 <th class="head"><p>Enabled Components</p></th>
+<th class="head"><p>Short Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>LND</p></td>
-<td><p>CMEPS, CDEPS, NOAHMP and FMS</p></td>
+<td><p>CDEPS, NOAHMP, CMEPS, and FMS</p></td>
+<td><p>Land model forced by GSWP3 data atmosphere</p></td>
 </tr>
-<tr class="row-odd"><td><p>LND-ALL</p></td>
-<td><p>All components used by S2S (w/o wave) as well as NOAHMP</p></td>
+<tr class="row-odd"><td><p>ATML</p></td>
+<td><p>FV3ATM, NOAHMP, CMEPS, and FMS</p></td>
+<td><p>Land model forced by active atmosphere (FV3ATM)</p></td>
+</tr>
+<tr class="row-even"><td><p>S2SWAL</p></td>
+<td><p>FV3ATM, MOM6, CICE6, WW3, NOAHMP, FMS, CMEPS</p></td>
+<td><p>All components used by S2S plus NOAHMP. There is no RT to test this configuration.</p></td>
 </tr>
 </tbody>
 </table>
-<p>To compile the model with land model support, following command can be used for NCAR’s Cheyenne. The platform definition can be changed to build model in other platforms such as MSU’s Orion but initial implementation is only tested on NCAR’s Cheyenne at this point.</p>
+<p>To compile the model with land model support, following command can be used for NCAR’s Cheyenne. Note that this is using <cite>contol_p8</cite> as an example for CCPP suites. The platform definition can be changed to build model in other platforms such as MSU’s Orion but initial implementation is only tested on NCAR’s Cheyenne at this point.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd tests</span>
-<span class="go">./compile.sh &quot;cheyenne.intel&quot; &quot;-DAPP=LND-ALL -DCCPP_SUITES=FV3_GFS_v16_coupled_nsstNoahmpUGWPv1,FV3_GFS_v16_coupled_p7_rrtmgp&quot; noahmp NO NO</span>
+<span class="go">./compile.sh &quot;cheyenne.gnu&quot; &quot;-DAPP=ATML -DCCPP_SUITES=FV3_GFS_v16,FV3_GFS_v15_thompson_mynn,FV3_GFS_v17_p8,FV3_GFS_v17_p8_rrtmgp,FV3_GFS_v15_thompson_mynn_lam3km&quot; noahmp NO NO</span>
 </pre></div>
 </div>
 </section>
 <section id="running-noahmp-specific-regression-tests">
 <h2><span class="section-number">2.3. </span>Running NoahMP Specific Regression Tests<a class="headerlink" href="#running-noahmp-specific-regression-tests" title="Permalink to this headline">¶</a></h2>
-<p>Two new regression test are included to test the external NoahMP land component:</p>
+<p>Three new regression test are included to test the external NoahMP land component:</p>
 <table class="colwidths-given docutils align-default" id="id2">
 <caption><span class="caption-number">Table 2.2 </span><span class="caption-text">List of regression tests</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
@@ -98,18 +110,18 @@
 <tr class="row-odd"><td><p>datm_cdeps_lnd_gswp3_rst</p></td>
 <td><p>Restart reproducibility test (compare results with datm_cdeps_lnd_gswp3)</p></td>
 </tr>
+<tr class="row-even"><td><p>control_p8_atmlnd_sbs</p></td>
+<td><p>Side-by-side test that forces external land component with active atmosphere in <cite>contol_p8</cite> configuration. This is mainly used to compare land output coming from CCPP/Physics with external NoahMP. In this configuration there is no feedback to active atmosphere.</p></td>
+</tr>
 </tbody>
 </table>
-<p>Since the initial implementation is still in a development fork, the required input files and baseline directory to run the new regression tests are not the part of the common UFS Weather Model input directory. As a result, the user need to point temporary input and baseline directory to run newly defined RTs under NCAR’s Cheyenne platform. This can be done easily by modifying <code class="docutils literal notranslate"><span class="pre">tests/rt.sh</span></code> script as follows,</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Find Cheyenne section and change the DISKNM variable from
-<span class="go">DISKNM=/glade/p/ral/jntp/GMTB/ufs-weather-model/RT</span>
-<span class="gp"># </span>to
-<span class="go">DISKNM=/glade/work/turuncu/NOAHMP/RT</span>
+<p>Newly introduced RTs can be run with following command,</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd tests</span>
+<span class="go">./rt.sh -k -n datm_cdeps_lnd_gswp3_rst</span>
 </pre></div>
 </div>
-<p>This will allow the RTs find the reqired input and baseline files. Then, RTs can be run with following command,</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd tests</span>
-<span class="go">./rt.sh -k -n datm_cdeps_lnd_gswp3</span>
+<span class="go">./rt.sh -k -n control_p8_atmlnd_sbs</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">-k</span></code> basically keeps the run directory for future reference. The user could use this run directory to modify out-of-box configuration for different purposes.</p>
@@ -136,6 +148,9 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="DriverAndCoupling.html"
                         title="previous chapter"><span class="section-number">1. </span>Driver and Coupling</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ComponentTesting.html"
+                        title="next chapter"><span class="section-number">3. </span>Building, Running and Testing Land Model Outside of UFS Weather Model</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -163,6 +178,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="ComponentTesting.html" title="3. Building, Running and Testing Land Model Outside of UFS Weather Model"
+             >next</a> |</li>
         <li class="right" >
           <a href="DriverAndCoupling.html" title="1. Driver and Coupling"
              >previous</a> |</li>
